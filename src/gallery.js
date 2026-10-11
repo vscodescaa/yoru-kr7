@@ -82,7 +82,6 @@ export class Gallery {
     cam.fov = tall ? shot.fov * 1.25 : shot.fov;
     cam.updateProjectionMatrix();
     st.car.root.rotation.y = 0;
-    if (st.mirror) st.mirror.rotation.y = 0;
     st.title.visible = false;
     st.renderer.toneMappingExposure = 1;
     st.scene.environmentRotation.y = shot.env;

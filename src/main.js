@@ -38,8 +38,13 @@ async function boot() {
   await loadFonts();
   const canvas = document.getElementById('gl');
   let stage;
+  const line = document.querySelector('.loader-line');
   try {
     stage = new Stage(canvas, detectQuality());
+    await stage.load((p) => {
+      line.classList.add('determinate');
+      line.style.setProperty('--p', p.toFixed(3));
+    });
   } catch (err) {
     fallback(err);
     return;

@@ -171,11 +171,9 @@ export class Configurator {
       gsap.to(car.paint, { metalness: p.metal, roughness: p.rough, duration: 0.9 * d });
     } else if (key === 'wheel' || key === 'finish') {
       car.setWheels(this.state.wheel, this.state.finish);
-      this.stage.refreshMirror();
       if (!instant && key === 'wheel') this.spinBoost = 14;
     } else if (key === 'aero') {
       car.setAero(v);
-      this.stage.refreshMirror();
       if (!instant) {
         const part = v === 'ala' ? car.wing : car.duck;
         const base = part.userData.baseY ?? (part.userData.baseY = part.position.y);
