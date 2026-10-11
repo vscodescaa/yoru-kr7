@@ -168,6 +168,8 @@ export function buildRoadMaterial({ data, normal, reflector, sidewalk = false, q
             wsum += w;
           }
           refl /= wsum;
+          // Sin techo, una luminaria reflejada a ras de suelo quema medio encuadre.
+          refl = refl / (1. + max(max(refl.r, refl.g), refl.b) * .35);
           vec3 V = normalize(cameraPosition - vWorldP);
           float NdV = clamp(dot(gWorldN, V), 0., 1.);
           float F = .02 + .98 * pow(1. - NdV, 5.);
@@ -288,7 +290,7 @@ export function buildLamps({ quality }) {
         vec4 w = modelMatrix * vec4(position, 1.);
         // Con la cámara dentro o pegada al cono, el haz llenaría la pantalla: se apaga.
         vec3 apex = (modelMatrix * vec4(0., 0., 0., 1.)).xyz;
-        vCam = smoothstep(2.6, 6.5, length(cameraPosition.xz - apex.xz));
+        vCam = smoothstep(4.5, 10., length(cameraPosition.xz - apex.xz));
         vW = w.xyz;
         vH = -position.y / 6.5;
         vN = normalize(mat3(modelMatrix) * normal);

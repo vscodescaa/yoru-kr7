@@ -92,7 +92,7 @@ export class Stage {
     this.scene.add(this.car.root);
     this.#buildHeadlights();
 
-    this.reflector.hidden.push(this.street.group, this.rain.mesh, this.splashes.mesh, this.shadow);
+    this.reflector.hidden.push(this.street.group, this.rain.mesh, this.splashes.mesh, this.shadow, ...this.lamps.cones);
     this.post = new Post(this.renderer, this.scene, this.camera, q);
     this.#buildTitle();
 
@@ -119,9 +119,11 @@ export class Stage {
       [2.1, 0.62, -0.62],
     ];
     for (const [x, y, z] of anchors) {
-      const s = new THREE.SpotLight('#e4ecff', 0, 48, 0.42, 0.6, 1.4);
+      // Haz apuntado casi horizontal: como un faro con corte, el asfalto se ilumina a
+      // partir de unos metros y no justo delante del paragolpes.
+      const s = new THREE.SpotLight('#e4ecff', 0, 55, 0.36, 0.7, 1.2);
       s.position.set(x, y, z);
-      s.target.position.set(x + 10, 0, z * 1.6);
+      s.target.position.set(x + 10, y + 0.9, z * 1.4);
       this.car.root.add(s, s.target);
       this.heads.push(s);
     }

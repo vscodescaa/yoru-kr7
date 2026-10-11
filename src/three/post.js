@@ -91,7 +91,10 @@ const DofShader = {
           // Lo que está detrás no puede desbordarse sobre lo enfocado.
           if (z2 > zc) c2 = min(c2, cc);
           float w = smoothstep(r - 1.5, r + .5, c2);
-          acc += texture2D(tDiffuse, uv2).rgb * w;
+          vec3 sc = texture2D(tDiffuse, uv2).rgb;
+          // Las luces puntuales muy intensas no deben inundar el disco de desenfoque.
+          w /= 1. + dot(sc, vec3(.2126, .7152, .0722)) * .25 * step(.5, r);
+          acc += sc * w;
           wsum += w;
         }
         col = acc / wsum;
