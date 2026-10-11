@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#04060c" />
+    <title>YORU KR-7</title>
+    <meta name="description" content="YORU KR-7: un coupé conceptual de cultura JDM nocturna. Demo interactiva con historia por scroll y configurador 3D." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2304060c'/%3E%3Cpath d='M6 20h20' stroke='%23ff2338' stroke-width='3'/%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <div id="loader" aria-hidden="true">
+      <span class="loader-mark">YORU</span>
+      <span class="loader-line"><i></i></span>
+    </div>
+
+    <canvas id="gl" aria-hidden="true"></canvas>
+    <div class="veil" aria-hidden="true"></div>
+
+    <header class="bar">
+      <a class="wordmark" href="#top" aria-label="YORU, volver al inicio">YORU</a>
+      <nav aria-label="Secciones">
+        <a href="#historia">Historia</a>
+        <a href="#configurar">Configurar</a>
+        <a href="#detalles">Detalles</a>
+      </nav>
+    </header>
+
+    <ol class="rail" aria-hidden="true">
+      <li data-ch="silueta"><span lang="ja">影</span></li>
+      <li data-ch="luz"><span lang="ja">光</span></li>
+      <li data-ch="aire"><span lang="ja">風</span></li>
+      <li data-ch="corazon"><span lang="ja">心</span></li>
+    </ol>
+
+    <main>
+      <section id="top" class="hero" data-shot="hero">
+        <h1 class="sr-only">YORU KR-7, coupé conceptual</h1>
+        <div class="hero-fade">
+          <div class="hero-copy">
+            <p class="hero-line">Hecho para la hora en que la ciudad se apaga.</p>
+            <p class="hero-sub">Coupé biturbo de motor delantero. Un concepto para recorrer de noche.</p>
+          </div>
+          <p class="hero-vertical" lang="ja">夜の高速のために</p>
+          <a class="scroll-cue" href="#historia"><span>Desliza</span><i aria-hidden="true"></i></a>
+        </div>
+      </section>
+
+      <section id="historia" class="chapter ch-silueta" data-shot="silueta" data-ch="silueta">
+        <div class="sticky">
+          <span class="kanji" lang="ja" aria-hidden="true">影</span>
+          <h2 class="ch-title">Una sola línea, del morro a la cola.</h2>
+          <p class="ch-text">El techo cae sin interrupción hasta el labio trasero. Mide 1,22 metros de alto y nada sobresale por encima de las ruedas.</p>
+          <div class="measure measure-length" aria-hidden="true"><i></i><span>4.460 mm</span></div>
+          <div class="measure measure-height" aria-hidden="true"><i></i><span>1.215 mm</span></div>
+        </div>
+      </section>
+
+      <section class="chapter ch-luz" data-shot="luz" data-ch="luz">
+        <div class="sticky">
+          <span class="kanji" lang="ja" aria-hidden="true">光</span>
+          <h2 class="ch-title">Cuatro círculos rojos.</h2>
+          <p class="ch-text">La firma trasera se reconoce antes que el coche: cuatro anillos LED y una línea que cruza la cola de lado a lado.</p>
+        </div>
+      </section>
+
+      <section class="chapter ch-aire" data-shot="aire" data-ch="aire">
+        <div class="sticky">
+          <span class="kanji" lang="ja" aria-hidden="true">風</span>
+          <h2 class="ch-title">El aire también empuja.</h2>
+          <p class="ch-text">Ala de cuello de cisne, difusor de cinco aletas y fondo plano. A 250 km/h el KR-7 se pega al asfalto con 142 kg de carga extra.</p>
+          <p class="speed" aria-label="Velocidad de referencia: 250 kilómetros por hora"><span class="speed-num">0</span><span class="speed-unit">km/h</span></p>
+        </div>
+      </section>
+
+      <section class="chapter ch-corazon" data-shot="corazon" data-ch="corazon">
+        <div class="sticky">
+          <span class="kanji" lang="ja" aria-hidden="true">心</span>
+          <h2 class="ch-title">Seis en línea. Dos turbos.</h2>
+          <p class="ch-text">Un 2,6 litros que sube de vueltas sin pedir permiso, con tracción total y caja secuencial de seis marchas.</p>
+          <dl class="specs">
+            <div><dt>Potencia</dt><dd data-count="612">612</dd><span>CV</span></div>
+            <div><dt>Par máximo</dt><dd data-count="640">640</dd><span>Nm</span></div>
+            <div><dt>De 0 a 100 km/h</dt><dd data-count="3.2" data-decimals="1">3,2</dd><span>s</span></div>
+            <div><dt>Peso en vacío</dt><dd data-count="1390" data-thousands>1.390</dd><span>kg</span></div>
+          </dl>
+        </div>
+      </section>
+
+      <section id="configurar" class="config" data-shot="config">
+        <div class="sticky">
+          <div class="config-head">
+            <h2>Hazlo tuyo.</h2>
+            <p class="config-hint"><span class="drag-icon" aria-hidden="true"></span>Arrastra el coche para girarlo</p>
+          </div>
+
+          <div class="config-views" role="group" aria-label="Vista">
+            <button type="button" data-view="0" aria-pressed="true">Tres cuartos</button>
+            <button type="button" data-view="0.77" aria-pressed="false">Perfil</button>
+            <button type="button" data-view="2.55" aria-pressed="false">Trasera</button>
+          </div>
+
+          <form class="panel" aria-label="Configurador" onsubmit="return false" data-lenis-prevent>
+            <fieldset class="opt">
+              <legend>Pintura <output data-out="paint"></output></legend>
+              <div class="swatches" data-group="paint"></div>
+            </fieldset>
+            <fieldset class="opt">
+              <legend>Llantas <output data-out="wheel"></output></legend>
+              <div class="choices" data-group="wheel"></div>
+            </fieldset>
+            <fieldset class="opt">
+              <legend>Acabado de llanta <output data-out="finish"></output></legend>
+              <div class="swatches small" data-group="finish"></div>
+            </fieldset>
+            <fieldset class="opt">
+              <legend>Aerodinámica</legend>
+              <div class="segmented" data-group="aero">
+                <button type="button" data-value="ala">Ala GT</button>
+                <button type="button" data-value="ducktail">Ducktail</button>
+              </div>
+            </fieldset>
+            <fieldset class="opt">
+              <legend>Altura <output data-out="stance"></output></legend>
+              <input type="range" min="-30" max="10" step="5" value="0" data-group="stance" aria-label="Altura de suspensión en milímetros" />
+            </fieldset>
+            <fieldset class="opt opt-row">
+              <legend>Faros</legend>
+              <button type="button" class="toggle" role="switch" aria-checked="true" data-group="lights"><i></i><span>Encendidos</span></button>
+            </fieldset>
+            <div class="build">
+              <p class="build-code" aria-live="polite"></p>
+              <button type="button" class="link-btn" data-copy>Copiar enlace</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section id="detalles" class="gallery" data-shot="detalles">
+        <div class="gallery-pin">
+          <header class="gallery-head">
+            <h2>Detalles.</h2>
+            <p>Cada imagen se renderiza en tu navegador con la configuración que acabas de elegir.</p>
+          </header>
+          <div class="track">
+            <figure class="tile" data-detail="tail"><div class="frame"><img alt="Los cuatro pilotos circulares encendidos bajo la lluvia" /></div><figcaption><b>Cuatro anillos, una línea.</b> La firma trasera, encendida en orden de dentro hacia fuera.</figcaption></figure>
+            <figure class="tile tall" data-detail="wheel"><div class="frame"><img alt="Primer plano de la llanta y la pinza de freno roja" /></div><figcaption><b>Pinza de seis pistones.</b> Roja, visible entre los radios.</figcaption></figure>
+            <figure class="tile" data-detail="head"><div class="frame"><img alt="La línea de luz delantera vista a ras de suelo" /></div><figcaption><b>Una mirada de un solo trazo.</b> La línea LED abraza el morro de lado a lado.</figcaption></figure>
+            <figure class="tile tall" data-detail="haunch"><div class="frame"><img alt="La aleta trasera ensanchada sobre la rueda, con los pilotos al fondo" /></div><figcaption><b>Aletas anchas.</b> Cuatro centímetros más por lado que delante.</figcaption></figure>
+            <figure class="tile" data-detail="roof"><div class="frame"><img alt="Vista alta del techo y la caída fastback" /></div><figcaption><b>Fastback.</b> El techo cae en una sola curva hasta la cola.</figcaption></figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="cierre" data-shot="cierre">
+        <div class="cierre-inner">
+          <h2>¿Tienes un modelo que presentar?</h2>
+          <p>El KR-7 no existe. Lo construimos para enseñar lo que puede ser una presentación: una noche entera dentro del navegador, fluida incluso en un equipo modesto.</p>
+          <div class="cta">
+            <a class="btn" href="mailto:hola@tuestudio.com?subject=Quiero%20una%20demo%20como%20YORU%20KR-7">Agenda una demo</a>
+            <a class="btn ghost" href="#top" data-top>Recorrerlo de nuevo</a>
+          </div>
+        </div>
+        <footer class="foot">
+          <p>YORU y KR-7 son una marca y un modelo ficticios, creados para esta demo.</p>
+          <p>Three.js, GSAP y Lenis. Sin vídeos ni modelos descargados: todo se genera en tiempo real.</p>
+        </footer>
+      </section>
+    </main>
+    <div class="toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
