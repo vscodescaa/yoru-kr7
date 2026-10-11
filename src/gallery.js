@@ -83,6 +83,10 @@ export class Gallery {
     cam.updateProjectionMatrix();
     st.car.root.rotation.y = 0;
     st.title.visible = false;
+    // Enfoque sobre el detalle, con poca profundidad de campo como en un macro.
+    const dof = st.post.dof.uniforms;
+    dof.uFocus.value = Math.hypot(shot.pos[0] - shot.target[0], shot.pos[1] - shot.target[1], shot.pos[2] - shot.target[2]);
+    dof.uAperture.value = st.quality === 'low' ? 0 : 0.5;
     st.renderer.toneMappingExposure = 1;
     st.scene.environmentRotation.y = shot.env;
     const rimPos = st.rim.position.clone();

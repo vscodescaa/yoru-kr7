@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Car } from './car.js';
 import { Assets } from './assets.js';
+import { loadCarModel } from './car-model.js';
 import { buildEnvironmentMap, buildBokeh, buildContactShadow } from './environment.js';
 import { buildStreet, buildLamps, updateLampLights, STREET } from './road.js';
 import { buildStreetBlocks, buildSigns, buildSkyline, buildSky, buildStreetFurniture, PERIOD } from './city.js';
@@ -9,8 +10,8 @@ import { PlanarReflector } from './reflector.js';
 import { Post } from './post.js';
 
 const FOG = new THREE.Color('#08070d');
-const SODIUM_I = 28;
-const HEAD_I = 32;
+const SODIUM_I = 13;
+const HEAD_I = 24;
 
 /** Elige un nivel de calidad inicial con lo que el navegador deja saber. */
 export function detectQuality() {
@@ -48,10 +49,11 @@ export class Stage {
   async load(onProgress) {
     const q = this.quality;
     const assets = new Assets(onProgress);
-    const [hdr, data, normal] = await Promise.all([
+    const [hdr, data, normal, carGltf] = await Promise.all([
       assets.hdri('env/shanghai_bund_1k.hdr'),
       assets.texture('env/asphalt_data.jpg'),
       assets.texture('env/asphalt_normal.jpg'),
+      loadCarModel(assets.base + 'models/r34.glb', assets.manager),
     ]);
     this.scene.environment = buildEnvironmentMap(this.renderer, hdr);
     this.scene.environmentIntensity = 1;
@@ -70,7 +72,7 @@ export class Stage {
     this.sky = buildSky();
     this.skyline = buildSkyline(this.scene.fog);
     this.blocks = buildStreetBlocks(this.scene.fog);
-    this.signs = buildSigns();
+    this.signs = buildSigns(this.blocks.items);
     this.city = new THREE.Group();
     this.furniture = buildStreetFurniture();
     this.city.add(this.blocks.mesh, this.signs.group, this.furniture.group);
@@ -86,17 +88,13 @@ export class Stage {
       this.street.group, this.lamps.group, this.rain.mesh, this.splashes.mesh, this.shadow
     );
 
-    this.car = new Car({ quality: q });
+    this.car = new Car(carGltf, { quality: q });
     this.scene.add(this.car.root);
-    // Los halos ahora salen del bloom: los sprites antiguos sobran.
-    this.car.root.traverse((o) => {
-      if (o.isSprite) o.visible = false;
-    });
     this.#buildHeadlights();
-    this.#buildTitle();
 
-    this.reflector.hidden.push(this.street.group, this.rain.mesh, this.splashes.mesh, this.title, this.shadow);
+    this.reflector.hidden.push(this.street.group, this.rain.mesh, this.splashes.mesh, this.shadow);
     this.post = new Post(this.renderer, this.scene, this.camera, q);
+    this.#buildTitle();
 
     this.road = 0;
     this.time = 0;
@@ -130,40 +128,17 @@ export class Stage {
   }
 
   #buildTitle() {
-    // El titular vive en WebGL, detrás del coche: el coche lo tapa como en una portada.
+    // El titular se compone en el pase de profundidad de campo: queda nítido y el coche lo tapa.
     const c = document.createElement('canvas');
     c.width = 2048;
     c.height = 512;
     this.titleCanvas = c;
     this.titleTex = new THREE.CanvasTexture(c);
     this.titleTex.colorSpace = THREE.SRGBColorSpace;
-    this.titleUniforms = {
-      uMap: { value: this.titleTex },
-      uReveal: { value: 0 },
-      uOpacity: { value: 1 },
-      uColor: { value: new THREE.Color('#e9ebf2') },
-    };
-    const mat = new THREE.ShaderMaterial({
-      uniforms: this.titleUniforms,
-      transparent: true,
-      depthWrite: false,
-      fog: false,
-      vertexShader: /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
-      fragmentShader: /* glsl */ `
-        uniform sampler2D uMap; uniform float uReveal, uOpacity; uniform vec3 uColor; varying vec2 vUv;
-        void main(){
-          float a = texture2D(uMap, vUv).a;
-          float edge = abs(vUv.x - .5)*2.;
-          float m = smoothstep(edge-.04, edge, uReveal*1.04);
-          float shade = mix(.35, 1., smoothstep(.1,.85,vUv.y));
-          gl_FragColor = vec4(uColor*shade*.85, a*m*uOpacity*.92);
-        }`,
-    });
-    this.title = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.25), mat);
-    this.title.renderOrder = 0;
-    this.title.position.z = -24;
-    this.camera.add(this.title);
-    this.titleLayout = { y: 0.2, width: 0.94, stretch: 1, lift: 0 };
+    this.titleUniforms = this.post.dof.uniforms;
+    this.titleUniforms.tTitle.value = this.titleTex;
+    this.title = { visible: true, distance: 24 };
+    this.titleLayout = { y: 0.2, width: 0.94 };
     this.drawTitle('KR-7');
   }
 
@@ -270,7 +245,7 @@ export class Stage {
     this.rim.color.setRGB(s.rimR, s.rimG, s.rimB);
     this.car.setLights(s.head);
     this.car.setTail(s.tail);
-    this.heads.forEach((h) => (h.intensity = HEAD_I * s.head));
+    this.heads.forEach((h) => (h.intensity = HEAD_I * s.head * s.beam));
     this.rain.uniforms.uAmount.value = s.rain;
     this.rain.uniforms.uWind.value = 0.12;
     this.rain.uniforms.uTravel.value = s.speed;
@@ -287,16 +262,25 @@ export class Stage {
     this.city.position.x = -(((this.road % PERIOD) + PERIOD) % PERIOD);
     updateLampLights(this.lamps, lampOff, 0);
 
-    // Titular en WebGL.
+    // Titular: rectángulo en pantalla equivalente a un plano a 24 m delante de la cámara.
     const t = this.titleLayout;
-    const dist = -this.title.position.z;
+    const dist = this.title.distance;
     const vh = 2 * dist * Math.tan((cam.fov * Math.PI) / 360);
     const vw = vh * aspect;
     const w = vw * Math.min(t.width, aspect < 1 ? 1.25 : t.width) * s.titleScale;
-    this.title.scale.set(w, w, 1);
-    this.title.position.y = vh * (t.y + s.titleLift);
-    this.titleUniforms.uOpacity.value = s.title;
+    const hw = w / vw / 2;
+    const hh = (w * 0.25) / vh / 2;
+    const cy = 0.5 + (vh * (t.y + s.titleLift)) / vh;
+    this.titleUniforms.uTitleRect.value.set(0.5 - hw, cy - hh, 0.5 + hw, cy + hh);
+    this.titleUniforms.uTitleDepth.value = dist;
     this.title.visible = s.title > 0.002;
+    this.titleOpacity = s.title;
+
+    // Enfoque sobre el centro del coche y apertura del plano.
+    this.tmp.set(0, 0.6, 0).applyMatrix4(cam.matrixWorldInverse);
+    const dof = this.post.dof.uniforms;
+    dof.uFocus.value = Math.max(1, -this.tmp.z);
+    dof.uAperture.value = this.quality === 'low' ? 0 : s.dof;
   }
 
   #feedRain() {
@@ -332,7 +316,9 @@ export class Stage {
     this.sky.uniforms.uTime.value = this.time;
     for (const l of this.lamps.lights) l.intensity = SODIUM_I * (l.userData.w ?? 0);
     this.#feedRain();
+    this.car.update();
 
+    this.titleUniforms.uOpacity.value = this.title.visible ? this.titleOpacity : 0;
     this.reflector.update(this.renderer, this.scene, this.camera);
     this.post.render(dt, this.time);
     this.#adapt(dt);

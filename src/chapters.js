@@ -1,6 +1,5 @@
 import gsap from 'gsap';
 import * as THREE from 'three';
-import { HALF, roofHeight } from './three/car.js';
 
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 
@@ -23,9 +22,8 @@ export class Chapters {
     this.silueta = document.querySelector('.ch-silueta');
     this.mLen = this.silueta?.querySelector('.measure-length');
     this.mHei = this.silueta?.querySelector('.measure-height');
-    let roof = 0;
-    for (let x = -1; x < 0.5; x += 0.05) roof = Math.max(roof, roofHeight(x));
-    this.roof = roof;
+    this.dims = stage.car.dims;
+    this.roof = this.dims.roof;
     this.v = new THREE.Vector3();
 
     // Encendido de los cuatro pilotos ligado al scroll del capítulo Luz.
@@ -151,16 +149,16 @@ export class Chapters {
     const st = this.stage;
     const lift = st.car.body.position.y;
     // Cota de longitud, bajo el coche.
-    st.project(this.v.set(-HALF, -0.12, 0), this.pt);
-    st.project(this.v.set(HALF, -0.12, 0), this.pt2);
+    st.project(this.v.set(this.dims.rear, -0.12, 0), this.pt);
+    st.project(this.v.set(this.dims.front, -0.12, 0), this.pt2);
     const a = this.pt.x < this.pt2.x ? this.pt : this.pt2;
     const b = a === this.pt ? this.pt2 : this.pt;
     this.mLen.style.transform = `translate(${a.x}px, ${a.y}px)`;
     this.mLen.style.setProperty('--w', `${b.x - a.x}px`);
     this.mLen.style.setProperty('--p', k.toFixed(3));
     // Cota de altura, delante del morro.
-    st.project(this.v.set(HALF + 0.3, 0, 0), this.pt);
-    st.project(this.v.set(HALF + 0.3, this.roof + lift, 0), this.pt2);
+    st.project(this.v.set(this.dims.front + 0.3, 0, 0), this.pt);
+    st.project(this.v.set(this.dims.front + 0.3, this.roof + lift, 0), this.pt2);
     this.mHei.style.transform = `translate(${this.pt.x}px, ${this.pt.y}px)`;
     this.mHei.style.setProperty('--h', `${this.pt.y - this.pt2.y}px`);
     this.mHei.style.setProperty('--p', clamp01((p - 0.42) / 0.2).toFixed(3));

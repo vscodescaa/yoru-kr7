@@ -3,7 +3,7 @@ los caracteres japoneses que usa la demo (fontsource reparte la fuente en ~120 t
 import re, pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-texts = [ROOT / 'index.html', ROOT / 'src' / 'three' / 'environment.js', ROOT / 'src' / 'main.js']
+texts = [ROOT / 'index.html', *sorted((ROOT / 'src').rglob('*.js'))]
 chars = set()
 for t in texts:
     chars |= {c for c in t.read_text(encoding='utf-8') if ord(c) > 0x2FFF}

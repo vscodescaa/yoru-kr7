@@ -71,8 +71,8 @@ const FACADE = /* glsl */ `
     bool open = shopH > .3;
     col = mix(col, open ? shop : shutter, glass * ground);
     float boxY = step(3.05, y) * step(y, 3.7) * step(.04, sf) * step(sf, .96);
-    vec3 boxCol = vec3(hash(vec2(shopCell, 4.)), hash(vec2(shopCell, 5.)), hash(vec2(shopCell, 6.)));
-    boxCol = normalize(boxCol + .15);
+    float bh = hash(vec2(shopCell, 4.));
+    vec3 boxCol = bh < .3 ? vec3(1., .96, .9) : (bh < .5 ? vec3(1., .25, .2) : (bh < .7 ? vec3(.25, .6, 1.) : (bh < .85 ? vec3(1., .75, .2) : vec3(.3, .9, .5))));
     float letters = step(.18, abs(fract((sf - .04) * 9.) - .5)) * step(3.22, y) * step(y, 3.53);
     vec3 box = boxCol * (.12 + .35 * (1. - letters));
     col = mix(col, box, boxY * ground * step(.45, shopH));
@@ -148,58 +148,84 @@ export function buildStreetBlocks(fog) {
   return { mesh, uniforms: mesh.material.uniforms, items };
 }
 
-// Rótulos verticales en kanji, sobresaliendo de las fachadas hacia la calle.
-const SIGNS = [
-  { text: '夜走', color: '#ff2f6d', x: -30, side: -1, y: 6.2 },
-  { text: '高速', color: '#46c2ff', x: -9, side: -1, y: 7.4 },
-  { text: '湾岸', color: '#ffb347', x: 14, side: -1, y: 6.6 },
-  { text: '整備', color: '#ff2f3f', x: 27, side: -1, y: 8.2 },
-  { text: '月夜', color: '#9a7dff', x: -20, side: 1, y: 7.0 },
-  { text: '駐車', color: '#46c2ff', x: 5, side: 1, y: 6.0 },
-  { text: '夜走', color: '#ffb347', x: 31, side: 1, y: 7.8 },
-];
+// Rotulación de calle: letreros verticales que sobresalen hacia la calzada y paneles
+// horizontales sobre las fachadas, con los textos de cualquier calle comercial de Tokio.
+const VERTICAL = ['夜走', 'カラオケ', '居酒屋', 'ホテル', '高速', '湾岸', '整備', '喫茶', '月夜', '駐車場', 'ラーメン', '薬'];
+const HORIZONTAL = ['ラーメン', '居酒屋', 'カラオケ', '駐車場', '薬局', '喫茶店', 'ホテル', 'タバコ', '整備工場', '湾岸'];
+// Todos los caracteres que se dibujan en canvas: la fuente debe estar cargada antes.
+export const SIGN_GLYPHS = [...new Set([...VERTICAL, ...HORIZONTAL].join(''))].join('');
+const SIGN_COLORS = ['#ff2f6d', '#46c2ff', '#ffb347', '#ff2f3f', '#9a7dff', '#35e08a', '#ffffff', '#ffd34a'];
 
-function signTexture(text, color) {
+function signCanvas(text, color, vertical, inverted) {
+  const chars = [...text];
   const c = document.createElement('canvas');
-  c.width = 192;
-  c.height = 576;
+  const cell = 150;
+  c.width = vertical ? 192 : 96 + chars.length * cell;
+  c.height = vertical ? 96 + chars.length * cell : 220;
   const g = c.getContext('2d');
-  g.fillStyle = '#07070a';
-  g.fillRect(0, 0, 192, 576);
-  g.strokeStyle = color;
-  g.lineWidth = 6;
+  g.fillStyle = inverted ? '#f2f0ea' : '#07070a';
+  g.fillRect(0, 0, c.width, c.height);
+  g.strokeStyle = inverted ? color : color;
+  g.lineWidth = inverted ? 10 : 6;
   g.shadowColor = color;
-  g.shadowBlur = 16;
-  g.strokeRect(16, 16, 160, 544);
-  g.font = "800 132px 'Shippori Mincho B1', serif";
+  g.shadowBlur = inverted ? 0 : 16;
+  g.strokeRect(14, 14, c.width - 28, c.height - 28);
+  g.font = "800 128px 'Shippori Mincho B1', serif";
   g.textAlign = 'center';
   g.textBaseline = 'middle';
-  g.fillStyle = '#fff';
-  g.shadowBlur = 22;
-  [...text].forEach((ch, i) => g.fillText(ch, 96, 170 + i * 240));
+  g.fillStyle = inverted ? color : '#fff';
+  g.shadowBlur = inverted ? 0 : 22;
+  chars.forEach((ch, i) => {
+    if (vertical) g.fillText(ch, c.width / 2, 48 + cell / 2 + i * cell);
+    else g.fillText(ch, 48 + cell / 2 + i * cell, c.height / 2 + 6);
+  });
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 8;
-  return t;
+  return { tex: t, aspect: c.width / c.height };
 }
 
-export function buildSigns() {
+export function buildSigns(blocks) {
   const group = new THREE.Group();
+  const r = rng(91);
   const frameMat = new THREE.MeshStandardMaterial({ color: '#111216', roughness: 0.5, metalness: 0.6 });
-  for (const s of SIGNS) {
-    const col = new THREE.Color(s.color);
-    const face = new THREE.MeshBasicMaterial({
-      map: signTexture(s.text, s.color),
-      color: new THREE.Color(1, 1, 1).multiplyScalar(1.6),
-      fog: true,
-    });
-    const box = new THREE.Mesh(new THREE.BoxGeometry(0.34, 3.6, 1.15), [face, face, frameMat, frameMat, frameMat, frameMat]);
-    for (const k of [-1, 0, 1]) {
-      const b = box.clone();
-      const front = s.side < 0 ? STREET.buildNear : STREET.buildFar;
-      b.position.set(s.x + k * PERIOD, s.y, front - s.side * 0.85);
-      b.userData.color = col;
-      group.add(b);
+  const signs = [];
+  for (const b of blocks) {
+    const side = b.z < 0 ? -1 : 1;
+    const front = b.z - side * (b.d / 2);
+    // Letreros verticales: uno o dos por edificio, en el borde que da a la calle.
+    const nv = r() < 0.75 ? 1 + (r() < 0.35 ? 1 : 0) : 0;
+    for (let i = 0; i < nv; i++) {
+      const text = VERTICAL[(r() * VERTICAL.length) | 0];
+      const color = SIGN_COLORS[(r() * SIGN_COLORS.length) | 0];
+      const { tex, aspect } = signCanvas(text, color, true, r() < 0.25);
+      const h = 2.2 + [...text].length * 0.75;
+      const w = h * aspect;
+      const face = new THREE.MeshBasicMaterial({ map: tex, color: new THREE.Color(1, 1, 1).multiplyScalar(0.9 + r() * 0.5) });
+      const box = new THREE.Mesh(new THREE.BoxGeometry(0.22, h, w), [face, face, frameMat, frameMat, frameMat, frameMat]);
+      const x = b.x + (r() - 0.5) * (b.w - 1.5);
+      box.position.set(x, Math.min(b.h - h / 2 - 0.4, 4.6 + h / 2 + r() * 3), front - side * (w / 2 + 0.15));
+      signs.push(box);
+    }
+    // Panel horizontal sobre la planta baja.
+    if (r() < 0.7) {
+      const text = HORIZONTAL[(r() * HORIZONTAL.length) | 0];
+      const color = SIGN_COLORS[(r() * SIGN_COLORS.length) | 0];
+      const { tex, aspect } = signCanvas(text, color, false, r() < 0.4);
+      const h = 0.75 + r() * 0.5;
+      const w = Math.min(h * aspect, b.w - 0.8);
+      const mat = new THREE.MeshBasicMaterial({ map: tex, color: new THREE.Color(1, 1, 1).multiplyScalar(0.8 + r() * 0.4) });
+      const plane = new THREE.Mesh(new THREE.PlaneGeometry(w, w / aspect), mat);
+      plane.position.set(b.x + (r() - 0.5) * (b.w - w - 0.6), 3.95 + r() * 0.5, front - side * 0.06);
+      if (side > 0) plane.rotation.y = Math.PI;
+      signs.push(plane);
+    }
+  }
+  for (const k of [-1, 0, 1]) {
+    for (const sgn of signs) {
+      const c = sgn.clone();
+      c.position.x += k * PERIOD;
+      group.add(c);
     }
   }
   return { group };

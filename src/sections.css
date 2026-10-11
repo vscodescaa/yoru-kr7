@@ -240,7 +240,7 @@
 }
 .choices {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
 .choice {
@@ -257,8 +257,8 @@
   transition: color 0.25s, border-color 0.25s;
 }
 .choice svg {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
 }
 .choice:hover {
   color: var(--bone);
@@ -526,6 +526,14 @@ input[type='range']::-moz-range-thumb {
 }
 .foot p {
   margin: 0;
+  max-width: 62ch;
+}
+.foot a {
+  color: var(--mute);
+  text-underline-offset: 3px;
+}
+.foot a:hover {
+  color: var(--bone);
 }
 
 .toast {

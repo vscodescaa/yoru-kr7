@@ -268,7 +268,7 @@ export function buildLamps({ quality }) {
   const sodium = new THREE.Color('#ffa24c');
   const lensMesh = new THREE.Mesh(
     mergeGeometries(lenses),
-    new THREE.MeshBasicMaterial({ color: sodium.clone().multiplyScalar(14), side: THREE.DoubleSide, fog: false })
+    new THREE.MeshBasicMaterial({ color: sodium.clone().multiplyScalar(3.2), side: THREE.DoubleSide, fog: false })
   );
   group.add(posts, lensMesh);
 
@@ -304,7 +304,7 @@ export function buildLamps({ quality }) {
         float soft = pow(facing, 1.6);
         float fall = pow(1. - vH, 1.6) * smoothstep(0., .08, vH) * smoothstep(1., .82, vH);
         float rain = .75 + .25 * vnoise(vec2(vW.x * 9. + vW.z * 9., vW.y * 1.4 + uTime * 9.));
-        gl_FragColor = vec4(uColor * soft * fall * rain * .3 * vCam, 1.);
+        gl_FragColor = vec4(uColor * soft * fall * rain * .17 * vCam, 1.);
       }`,
   });
   const cones = heads.map((h) => {

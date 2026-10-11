@@ -3,12 +3,12 @@ import * as THREE from 'three';
 import { PAINTS } from './three/car.js';
 import { WHEELS, FINISHES } from './three/wheels.js';
 
-const DEFAULTS = { paint: 'violeta', wheel: 'kaze', finish: 'bronce', aero: 'ala', stance: 0, lights: true };
+const DEFAULTS = { paint: 'violeta', wheel: 'original', finish: 'plata', aero: 'ala', stance: 0, lights: true };
 const CODES = { violeta: 'VIO', azul: 'AZB', plata: 'PWG', blanco: 'BCI', rojo: 'RSH', sumi: 'NSU' };
 
 function rimIcon(id) {
-  const n = { kaze: 10, ami: 20, tetsu: 6 }[id];
-  const w = { kaze: 2.2, ami: 1, tetsu: 4.5 }[id];
+  const n = { original: 5, kaze: 10, ami: 20, tetsu: 6 }[id];
+  const w = { original: 3.4, kaze: 2.2, ami: 1, tetsu: 4.5 }[id];
   let lines = '';
   for (let i = 0; i < n; i++) {
     let a = (i / n) * Math.PI * 2;
@@ -29,7 +29,8 @@ function readHash() {
   if (PAINTS.some((p) => p.id === paint)) out.paint = paint;
   if (WHEELS.some((w) => w.id === wheel)) out.wheel = wheel;
   if (FINISHES.some((f) => f.id === finish)) out.finish = finish;
-  if (aero === 'ala' || aero === 'ducktail') out.aero = aero;
+  if (aero === 'ala' || aero === 'lisa') out.aero = aero;
+  if (aero === 'ducktail') out.aero = 'lisa'; // enlaces antiguos
   const st = Number(stance);
   if (Number.isFinite(st) && st >= -30 && st <= 10) out.stance = st;
   if (lights === '0' || lights === '1') out.lights = lights === '1';
@@ -174,8 +175,8 @@ export class Configurator {
       if (!instant && key === 'wheel') this.spinBoost = 14;
     } else if (key === 'aero') {
       car.setAero(v);
-      if (!instant) {
-        const part = v === 'ala' ? car.wing : car.duck;
+      if (!instant && v === 'ala') {
+        const part = car.wing;
         const base = part.userData.baseY ?? (part.userData.baseY = part.position.y);
         gsap.fromTo(part.position, { y: base - 0.28 }, { y: base, duration: 0.9, ease: 'expo.out' });
       }
@@ -215,7 +216,7 @@ export class Configurator {
   code() {
     const s = this.state;
     const st = s.stance === 0 ? '±0' : `${s.stance > 0 ? '+' : '−'}${Math.abs(s.stance)}`;
-    return `KR7 ${CODES[s.paint]} ${s.wheel.toUpperCase()} ${s.finish.slice(0, 2).toUpperCase()} ${s.aero === 'ala' ? 'GT' : 'DT'} ${st}`;
+    return `KR7 ${CODES[s.paint]} ${s.wheel.toUpperCase()} ${s.finish.slice(0, 2).toUpperCase()} ${s.aero === 'ala' ? 'GT' : 'LS'} ${st}`;
   }
 
   hash() {

@@ -7,6 +7,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import { Stage, detectQuality } from './three/stage.js';
+import { SIGN_GLYPHS } from './three/city.js';
 import { Choreo } from './choreo.js';
 import { Chapters } from './chapters.js';
 import { Configurator } from './configurator.js';
@@ -22,7 +23,7 @@ async function loadFonts() {
     Promise.all([
       document.fonts.load("ultra-expanded 800 100px 'Archivo Variable'"),
       document.fonts.load("500 20px 'Archivo Variable'"),
-      document.fonts.load("800 100px 'Shippori Mincho B1'", '夜走高速湾岸整備月駐車'),
+      document.fonts.load("800 100px 'Shippori Mincho B1'", SIGN_GLYPHS),
     ]),
     wait(3000),
   ]);

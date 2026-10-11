@@ -5,6 +5,7 @@ const RIM_R = 0.236;
 const DEG = Math.PI / 180;
 
 export const WHEELS = [
+  { id: 'original', name: 'Original', note: 'Cinco radios, la de origen' },
   { id: 'kaze', name: 'Kaze', note: 'Cinco radios dobles' },
   { id: 'ami', name: 'Ami', note: 'Malla forjada' },
   { id: 'tetsu', name: 'Tetsu', note: 'Seis radios, plato profundo' },
