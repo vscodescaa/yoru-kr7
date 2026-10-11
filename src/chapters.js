@@ -40,17 +40,6 @@ export class Chapters {
 
     this.aire = document.querySelector('.ch-aire');
     this.speedNum = this.aire?.querySelector('.speed-num');
-    this.specs = [...document.querySelectorAll('.specs dd')].map((dd) => ({
-      dd,
-      to: Number(dd.dataset.count),
-      dec: Number(dd.dataset.decimals || 0),
-      thousands: dd.hasAttribute('data-thousands'),
-      last: '',
-    }));
-    this.fmt = (v, dec, th) => {
-      const fixed = v.toFixed(dec).replace('.', ',');
-      return th ? fixed.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : fixed;
-    };
     this.navMap = { silueta: 0, luz: 0, aire: 0, corazon: 0, config: 1, detalles: 2 };
 
     this.#entrances();
@@ -67,21 +56,7 @@ export class Chapters {
       this.speedNum.textContent = txt;
       this.lastKmh = txt;
     }
-    this.aire.style.setProperty('--stretch', `${(62 + 63 * k).toFixed(1)}%`);
-  }
-
-  #corazon(y) {
-    const p = this.choreo.progress('corazon', y);
-    if (p <= 0 || p >= 1) return;
-    this.specs.forEach((sp, i) => {
-      const k = clamp01((p - 0.3 - i * 0.05) / 0.22);
-      const e = 1 - Math.pow(1 - k, 3);
-      const txt = this.fmt(sp.to * e, sp.dec, sp.thousands);
-      if (txt !== sp.last) {
-        sp.dd.textContent = txt;
-        sp.last = txt;
-      }
-    });
+    this.aire.style.setProperty('--stretch', `${(62 + 50 * k).toFixed(1)}%`);
   }
 
   #entrances() {
@@ -91,50 +66,21 @@ export class Chapters {
       { autoAlpha: 1, y: 0 },
       { autoAlpha: 0, y: -60, ease: 'none', scrollTrigger: st('.hero', { start: 'top top', end: '35% top' }) }
     );
-    // Silueta: el titular se revela como un barrido de luz, de izquierda a derecha.
-    const sil = this.silueta;
-    if (sil) {
-      gsap.fromTo(
-        sil.querySelector('.ch-title'),
-        { clipPath: 'inset(-10% 100% -10% 0)' },
-        { clipPath: 'inset(-10% 0% -10% 0)', ease: 'none', scrollTrigger: st(sil, { start: 'top 55%', end: 'top 5%' }) }
-      );
-      gsap.fromTo(
-        sil.querySelector('.ch-text'),
-        { autoAlpha: 0, y: 24 },
-        { autoAlpha: 1, y: 0, ease: 'none', scrollTrigger: st(sil, { start: 'top 15%', end: 'top -15%' }) }
-      );
-    }
-    // Luz: el texto toma el rojo de los pilotos a medida que se encienden.
+    // Luz: el titular toma el rojo de los pilotos a medida que se encienden.
     const luz = document.querySelector('.ch-luz');
-    if (luz) {
+    if (luz && !this.reduce) {
       gsap.fromTo(
         luz.querySelector('.ch-title'),
-        { color: '#2a1216', textShadow: '0 0 0 rgba(255,35,56,0)' },
+        { color: '#6a3a42', textShadow: '0 0 0 rgba(255,35,56,0)' },
         {
-          color: '#ffe9ec',
-          textShadow: '0 0 38px rgba(255,35,56,0.55)',
+          color: '#fff0f2',
+          textShadow: '0 0 42px rgba(255,35,56,0.5)',
           ease: 'none',
-          scrollTrigger: st(luz, { start: 'top 30%', end: 'top -40%' }),
+          scrollTrigger: st(luz, { start: 'top 10%', end: 'top -45%' }),
         }
       );
-      gsap.fromTo(
-        luz.querySelector('.ch-text'),
-        { autoAlpha: 0 },
-        { autoAlpha: 1, ease: 'none', scrollTrigger: st(luz, { start: 'top -20%', end: 'top -45%' }) }
-      );
     }
-    // Aire y Corazón: el texto entra con el plano, sin adornos.
-    for (const sel of ['.ch-aire', '.ch-corazon']) {
-      const sec = document.querySelector(sel);
-      if (!sec) continue;
-      gsap.fromTo(
-        sec.querySelectorAll('.ch-title, .ch-text, .speed, .specs'),
-        { autoAlpha: 0 },
-        { autoAlpha: 1, ease: 'none', stagger: 0.15, scrollTrigger: st(sec, { start: 'top 40%', end: 'top -25%' }) }
-      );
-    }
-    gsap.utils.toArray('.chapter .kanji').forEach((k) => {
+    gsap.utils.toArray('.chapter .kanji, .gallery-head .kanji').forEach((k) => {
       gsap.fromTo(k, { yPercent: 18 }, { yPercent: -18, ease: 'none', scrollTrigger: st(k.closest('section'), { start: 'top bottom', end: 'bottom top' }) });
     });
   }
@@ -193,7 +139,6 @@ export class Chapters {
     this.stage.car.setTailSequence?.(s.tailSeq ?? 1);
     this.#measure(y);
     this.#aire(y);
-    this.#corazon(y);
     this.#rail(y);
   }
 }

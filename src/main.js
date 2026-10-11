@@ -12,6 +12,7 @@ import { Choreo } from './choreo.js';
 import { Chapters } from './chapters.js';
 import { Configurator } from './configurator.js';
 import { Gallery } from './gallery.js';
+import { editorial, heroLines } from './editorial.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -66,6 +67,7 @@ async function boot() {
   const chapters = new Chapters({ stage, choreo, lenis, reduceMotion });
   const gallery = new Gallery({ stage });
   const configurator = new Configurator({ stage, choreo, scrollPos, onChange: () => gallery.invalidate() });
+  editorial({ reduceMotion });
   ScrollTrigger.addEventListener('refresh', () => choreo.refresh());
   ScrollTrigger.refresh();
 
@@ -138,8 +140,15 @@ async function boot() {
   });
 
   document.getElementById('loader').classList.add('done');
-  const heroBits = document.querySelectorAll('.hero-copy, .hero-vertical, .scroll-cue, .bar');
+  const heroBits = document.querySelectorAll('.hero-vertical, .scroll-cue, .bar');
+  const heroSub = document.querySelector('.hero-sub');
+  const heroScrim = document.querySelector('.hero .scrim');
+  const heroLine = reduceMotion ? [] : heroLines();
   gsap.set(heroBits, { autoAlpha: 0 });
+  if (!reduceMotion) {
+    gsap.set(heroLine, { yPercent: 112 });
+    gsap.set([heroSub, heroScrim], { autoAlpha: 0 });
+  }
 
   const tl = gsap.timeline({ delay: 0.35 });
   if (reduceMotion) {
@@ -152,7 +161,10 @@ async function boot() {
       .to(intro, { head: 0.05, duration: 0.07 }, 0.98)
       .to(intro, { head: 1, duration: 0.12 }, 1.12)
       .to(intro, { reveal: 1, duration: 1.6, ease: 'expo.out' }, 1.35)
-      .to(heroBits, { autoAlpha: 1, duration: 1.2, ease: 'power2.out', stagger: 0.12 }, 2.1);
+      .to(heroScrim, { autoAlpha: 1, duration: 1.6, ease: 'power2.out' }, 1.8)
+      .to(heroLine, { yPercent: 0, duration: 1.3, ease: 'expo.out', stagger: 0.1 }, 2.1)
+      .to(heroSub, { autoAlpha: 1, duration: 1.1, ease: 'power2.out' }, 2.55)
+      .to(heroBits, { autoAlpha: 1, duration: 1.2, ease: 'power2.out', stagger: 0.12 }, 2.4);
   }
 }
 

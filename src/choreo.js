@@ -10,6 +10,7 @@ const BASE = {
   px: 5, py: 1, pz: 5, tx: 0, ty: 0.6, tz: 0, fov: 30,
   yaw: 0, env: 0, exposure: 1, keyI: 1.2, rimI: 0, rim: '#ff2a3a',
   head: 1, beam: 1, tail: 0.6, rain: 1, speed: 0, title: 0, titleScale: 1, titleLift: 0, dof: 0.6,
+  shiftX: 0, shiftY: 0, // descentramiento del encuadre (fracción de pantalla; + = coche a la derecha / abajo)
 };
 
 const shot = (o) => ({ ...BASE, ...o });
@@ -20,34 +21,34 @@ export const SHOTS = {
     drift: { px: 5.9, pz: 4.6 },
   }),
   silueta: shot({
-    px: 0.15, py: 0.66, pz: 10.2, tx: 0, ty: 0.64, tz: 0, fov: 25, env: 0.5, head: 0.9, tail: 0.7, titleScale: 1.7, titleLift: 0.12, dof: 0.55,
+    px: 0.15, py: 0.66, pz: 10.2, tx: 0, ty: 0.64, tz: 0, fov: 25, env: 0.5, head: 0.9, tail: 0.7, titleScale: 1.7, titleLift: 0.12, dof: 0.55, shiftY: 0.1,
     keyI: 1.4, drift: { px: -0.5, env: 1.1 },
   }),
   luz: shot({
     px: -5.4, py: 0.74, pz: 2.1, tx: -1.9, ty: 0.68, tz: 0.15, fov: 30, env: 1.6, head: 0.15, tail: 1,
-    keyI: 0.5, rimI: 6, exposure: 0.85, dof: 0.6, drift: { pz: 1.4, px: -5.0 },
+    keyI: 0.5, rimI: 5, exposure: 0.85, dof: 0.6, shiftX: -0.24, drift: { pz: 1.4, px: -5.0 },
   }),
   aire: shot({
     px: -4.6, py: 4.4, pz: -5.6, tx: -0.3, ty: 0.55, tz: 0, fov: 30, env: 2.4, head: 1, tail: 1,
-    keyI: 1.1, rimI: 3, rim: '#46c2ff', speed: 26, rain: 1.2, dof: 0.35, drift: { px: -5.4, py: 3.6, pz: -4.4 },
+    keyI: 1.1, rimI: 3, rim: '#46c2ff', speed: 26, rain: 1.2, dof: 0.35, shiftX: 0.12, shiftY: -0.06, drift: { px: -5.4, py: 3.6, pz: -4.4 },
   }),
   corazon: shot({
     px: 4.2, py: 0.36, pz: -2.7, tx: 1.55, ty: 0.48, tz: -0.1, fov: 30, env: 3.3, head: 1, tail: 0.6,
-    keyI: 1.0, rimI: 4, rim: '#ffd2a0', speed: 4, dof: 0.3, exposure: 0.8, beam: 0.45, drift: { px: 3.5, pz: -3.2 },
+    keyI: 1.0, rimI: 4, rim: '#ffd2a0', speed: 4, dof: 0.3, exposure: 0.8, beam: 0.45, shiftX: 0.2, drift: { px: 3.5, pz: -3.2 },
   }),
   config: shot({
     mobile: { tx: 0, ty: -1.25, tz: 0, fov: 30 },
     px: 6.7, py: 2.05, pz: 6.9, tx: 0.85, ty: 0.42, tz: -0.85, fov: 29, env: 0.2, head: 1, tail: 0.7,
-    keyI: 1.3, rain: 0.45, dof: 0.4, exposure: 0.85,
+    keyI: 1.3, rain: 0.45, dof: 0.4, exposure: 0.85, shiftY: 0.07,
   }),
   detalles: shot({
     mobile: { tx: 0, ty: -1.25, tz: 0, fov: 30 },
-    px: 6.7, py: 2.05, pz: 6.9, tx: 0.85, ty: 0.42, tz: -0.85, fov: 29, env: 0.2, rain: 0.45,
+    px: 6.7, py: 2.05, pz: 6.9, tx: 0.85, ty: 0.42, tz: -0.85, fov: 29, env: 0.2, rain: 0.45, shiftY: 0.07,
   }),
   cierre: shot({
     mobile: { tx: 0, ty: -1.9, tz: 0 },
     px: -8.8, py: 1.05, pz: 1.6, tx: -0.3, ty: 0.95, tz: -1.7, fov: 26, env: 1, head: 1, tail: 1,
-    keyI: 0.7, rimI: 6, speed: 30, rain: 1.1, dof: 0.7, drift: { px: -10.5, pz: 0.6 },
+    keyI: 0.7, rimI: 5, speed: 30, rain: 1.1, dof: 0.7, shiftX: 0.06, drift: { px: -10.5, pz: 0.6 },
   }),
 };
 

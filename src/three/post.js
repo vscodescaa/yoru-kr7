@@ -54,7 +54,9 @@ const DofShader = {
     uNear: { value: 0.1 },
     uFar: { value: 400 },
     uFocus: { value: 7 },
+    uRange: { value: 2.3 },
     uAperture: { value: 1 },
+    uTaps: { value: 32 },
     uMaxCoc: { value: 12 },
     uRes: { value: new THREE.Vector2(1, 1) },
     tTitle: { value: null },
@@ -69,21 +71,25 @@ const DofShader = {
     #include <packing>
     #define TAPS 32
     uniform sampler2D tDiffuse, tDepth, tTitle;
-    uniform float uNear, uFar, uFocus, uAperture, uMaxCoc, uTitleDepth, uReveal, uOpacity;
+    uniform float uNear, uFar, uFocus, uRange, uAperture, uMaxCoc, uTitleDepth, uReveal, uOpacity;
+    uniform int uTaps;
     uniform vec2 uRes; uniform vec4 uTitleRect; uniform vec3 uColor;
     varying vec2 vUv;
     float lin(vec2 uv){ return -perspectiveDepthToViewZ(texture2D(tDepth, uv).x, uNear, uFar); }
-    float coc(float z){ return clamp(uAperture * abs(z - uFocus) / max(z, .05), 0., 1.) * uMaxCoc; }
+    // Zona nítida de uRange metros alrededor del foco: el coche entero, no solo su centro.
+    float coc(float z){ return clamp(uAperture * max(abs(z - uFocus) - uRange, 0.) / max(z, .05), 0., 1.) * uMaxCoc; }
     void main(){
       float zc = lin(vUv);
       float cc = coc(zc);
       vec3 col = texture2D(tDiffuse, vUv).rgb;
-      if (uAperture > 0.) {
+      if (uAperture > 0. && cc > .35) {
         vec3 acc = col;
         float wsum = 1.;
+        float taps = float(uTaps);
         for (int i = 0; i < TAPS; i++) {
+          if (i >= uTaps) break;
           float fi = float(i);
-          float r = sqrt((fi + .5) / float(TAPS)) * uMaxCoc;
+          float r = sqrt((fi + .5) / taps) * uMaxCoc;
           float a = fi * 2.39996;
           vec2 uv2 = vUv + vec2(cos(a), sin(a)) * r / uRes;
           float z2 = lin(uv2);
@@ -99,6 +105,10 @@ const DofShader = {
         }
         col = acc / wsum;
       }
+      // Compresión suave por encima de 3: tras el tone mapping casi no cambia nada, pero
+      // un reflejo puntual de 50 ya no llena el bloom con un velo que lava el plano.
+      float pk = max(max(col.r, col.g), col.b);
+      if (pk > 3.) col *= (3. + log(pk - 2.)) / pk;
       // Titular en profundidad: detrás del coche, delante de la ciudad.
       vec2 tuv = (vUv - uTitleRect.xy) / (uTitleRect.zw - uTitleRect.xy);
       if (uOpacity > .002 && tuv.x > 0. && tuv.x < 1. && tuv.y > 0. && tuv.y < 1. && zc > uTitleDepth) {
@@ -109,6 +119,34 @@ const DofShader = {
         col = mix(col, uColor * shade * .85, ta * m * uOpacity * .92);
       }
       gl_FragColor = vec4(col, 1.);
+    }`,
+};
+
+/*
+ * Nitidez final sobre la imagen ya en sRGB: realce de detalle limitado al rango de los
+ * vecinos (como CAS), así no aparecen halos alrededor de las luces.
+ */
+const SharpenShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    uRes: { value: new THREE.Vector2(1, 1) },
+    uAmount: { value: 0.45 },
+  },
+  vertexShader: /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
+  fragmentShader: /* glsl */ `
+    uniform sampler2D tDiffuse; uniform vec2 uRes; uniform float uAmount;
+    varying vec2 vUv;
+    void main(){
+      vec2 px = 1. / uRes;
+      vec3 c = texture2D(tDiffuse, vUv).rgb;
+      vec3 n = texture2D(tDiffuse, vUv + vec2(0., px.y)).rgb;
+      vec3 s = texture2D(tDiffuse, vUv - vec2(0., px.y)).rgb;
+      vec3 e = texture2D(tDiffuse, vUv + vec2(px.x, 0.)).rgb;
+      vec3 w = texture2D(tDiffuse, vUv - vec2(px.x, 0.)).rgb;
+      vec3 lo = min(c, min(min(n, s), min(e, w)));
+      vec3 hi = max(c, max(max(n, s), max(e, w)));
+      vec3 sharp = c + (c - (n + s + e + w) * .25) * uAmount;
+      gl_FragColor = vec4(clamp(sharp, lo, hi), 1.);
     }`,
 };
 
@@ -137,6 +175,8 @@ export class Post {
     // El bloom suma sobre el búfer de entrada: con MSAA three lo invalida al resolver, así que el antialiasing va al final.
     this.smaa = new SMAAPass();
     this.composer.addPass(this.smaa);
+    this.sharpen = new ShaderPass(SharpenShader);
+    this.composer.addPass(this.sharpen);
     this.bloomScale = quality === 'low' ? 0.35 : 0.5;
   }
 
@@ -145,6 +185,7 @@ export class Post {
     this.composer.setSize(w, h);
     this.bloom.setSize(Math.round(w * dpr * this.bloomScale), Math.round(h * dpr * this.bloomScale));
     this.lens.uniforms.uRes.value.set(w * dpr, h * dpr);
+    this.sharpen.uniforms.uRes.value.set(w * dpr, h * dpr);
     this.dof.uniforms.uRes.value.set(w * dpr, h * dpr);
     this.dof.uniforms.uMaxCoc.value = Math.min(16, 11 * (h * dpr) / 900);
   }

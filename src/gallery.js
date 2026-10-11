@@ -35,6 +35,7 @@ export class Gallery {
     mm.add('(min-width: 761px)', () => {
       const track = this.el.querySelector('.track');
       const dist = () => Math.max(0, track.scrollWidth - innerWidth);
+      const bar = this.el.querySelector('.gallery-progress i');
       gsap.to(track, {
         x: () => -dist(),
         ease: 'none',
@@ -45,6 +46,7 @@ export class Gallery {
           end: () => `+=${dist()}`,
           scrub: true,
           invalidateOnRefresh: true,
+          onUpdate: (self) => bar && (bar.style.transform = `scaleX(${self.progress.toFixed(4)})`),
         },
       });
     });
@@ -79,6 +81,7 @@ export class Gallery {
     const cam = st.camera;
     cam.position.set(...shot.pos);
     cam.lookAt(...shot.target);
+    cam.clearViewOffset();
     cam.fov = tall ? shot.fov * 1.25 : shot.fov;
     cam.updateProjectionMatrix();
     st.car.root.rotation.y = 0;
@@ -87,6 +90,7 @@ export class Gallery {
     const dof = st.post.dof.uniforms;
     dof.uFocus.value = Math.hypot(shot.pos[0] - shot.target[0], shot.pos[1] - shot.target[1], shot.pos[2] - shot.target[2]);
     dof.uAperture.value = st.quality === 'low' ? 0 : 0.5;
+    dof.uRange.value = 0.35;
     st.renderer.toneMappingExposure = 1;
     st.scene.environmentRotation.y = shot.env;
     const rimPos = st.rim.position.clone();

@@ -33,7 +33,9 @@ export class Stage {
       stencil: false,
     });
     this.maxDpr = Math.min(devicePixelRatio || 1, quality === 'low' ? 1.5 : 2);
-    this.minDpr = 0.7;
+    // En escritorio nunca por debajo de 1:1: el coche se vería blando. Antes se
+    // recortan reflejo, muestras de desenfoque y bloom (ver #adapt).
+    this.minDpr = quality === 'low' ? 0.75 : Math.min(1, devicePixelRatio || 1);
     this.dpr = Math.min(devicePixelRatio || 1, quality === 'low' ? 1.25 : 1.5);
     this.renderer.setPixelRatio(this.dpr);
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -139,7 +141,8 @@ export class Stage {
     this.titleTex.colorSpace = THREE.SRGBColorSpace;
     this.titleUniforms = this.post.dof.uniforms;
     this.titleUniforms.tTitle.value = this.titleTex;
-    this.title = { visible: true, distance: 24 };
+    // A 10,5 m: detrás del coche pero delante de las fachadas, que ya no lo recortan.
+    this.title = { visible: true, distance: 10.5 };
     this.titleLayout = { y: 0.2, width: 0.94 };
     this.drawTitle('KR-7');
   }
@@ -190,6 +193,26 @@ export class Stage {
     this.resize();
   }
 
+  /** Un escalón menos de coste. Devuelve false si ya no queda nada que recortar. */
+  #degrade() {
+    if (this.dpr > 1.01 && this.dpr > this.minDpr + 0.01) {
+      this.setDpr(Math.max(1, this.dpr - 0.15));
+      return true;
+    }
+    const dof = this.post.dof.uniforms;
+    if (this.reflector.scale > 0.36) {
+      this.reflector.scale = 0.35;
+      this.resize();
+    } else if (dof.uTaps.value > 20) dof.uTaps.value = 20;
+    else if (this.reflector.scale > 0.26) {
+      this.reflector.scale = 0.25;
+      this.resize();
+    } else if (dof.uTaps.value > 12) dof.uTaps.value = 12;
+    else if (this.dpr > this.minDpr + 0.01) this.setDpr(this.dpr - 0.1);
+    else return false;
+    return true;
+  }
+
   /** Ajuste de calidad en marcha según el tiempo real de fotograma. */
   #adapt(dt) {
     if (dt <= 0 || dt > 0.25) return;
@@ -200,11 +223,7 @@ export class Stage {
     this.lastAvg = avg;
     if (avg > 0.024) {
       this.fastWindows = 0;
-      if (this.dpr > this.minDpr + 0.01) this.setDpr(this.dpr - 0.15);
-      else if (this.reflector.scale > 0.26) {
-        this.reflector.scale = 0.25;
-        this.resize();
-      } else if (this.post.bloom.enabled) this.post.bloom.enabled = false;
+      this.#degrade();
       this.onQuality?.(this.dpr, avg);
     } else if (avg < 0.0175) {
       if (++this.fastWindows >= 4 && this.dpr < this.maxDpr - 0.01) {
@@ -239,6 +258,16 @@ export class Stage {
       cam.fov = fov;
       cam.updateProjectionMatrix();
     }
+    // Descentramiento óptico: desplaza el encuadre sin cambiar la perspectiva para dejar
+    // sitio al texto. Solo en horizontal; en vertical el texto va arriba y abajo.
+    const wide = aspect > 1.25 ? 1 : 0;
+    const sx = s.shiftX * wide;
+    const sy = s.shiftY * wide;
+    if (Math.abs(sx) > 1e-4 || Math.abs(sy) > 1e-4) {
+      const W = innerWidth;
+      const H = innerHeight;
+      cam.setViewOffset(W, H, -sx * W, -sy * H, W, H);
+    } else if (cam.view?.enabled) cam.clearViewOffset();
 
     this.car.root.rotation.y = s.yaw;
     this.renderer.toneMappingExposure = s.exposure;
@@ -283,6 +312,7 @@ export class Stage {
     const dof = this.post.dof.uniforms;
     dof.uFocus.value = Math.max(1, -this.tmp.z);
     dof.uAperture.value = this.quality === 'low' ? 0 : s.dof;
+    dof.uRange.value = 2.3;
   }
 
   #feedRain() {

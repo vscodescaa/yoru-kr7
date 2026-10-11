@@ -71,9 +71,13 @@ export class Car {
     this.dims = { front: 2.24, rear: -2.2, roof: 1.36 };
 
     this.root.traverse((o) => {
-      if (o.isMesh) {
-        o.castShadow = false;
-        o.receiveShadow = false;
+      if (!o.isMesh) return;
+      o.castShadow = false;
+      o.receiveShadow = false;
+      // Texturas nítidas en ángulos rasantes (neumáticos, rejillas).
+      for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap']) {
+        const t = o.material[k];
+        if (t) t.anisotropy = 8;
       }
     });
     this.setWheels('original', 'plata');
@@ -85,28 +89,29 @@ export class Car {
     const q = this.quality;
     const Physical = q === 'low' ? THREE.MeshStandardMaterial : THREE.MeshPhysicalMaterial;
     const p = PAINTS[0];
-    this.paint = new Physical({ color: p.hex, metalness: p.metal, roughness: p.rough, envMapIntensity: 1 });
+    this.paint = new Physical({ color: p.hex, metalness: p.metal, roughness: p.rough, envMapIntensity: 0.78 });
     if (q !== 'low') {
-      this.paint.clearcoat = 1;
-      this.paint.clearcoatRoughness = 0.04;
+      // Laca algo menos especular: reflejos nítidos pero sin puntos que revienten el bloom.
+      this.paint.clearcoat = 0.82;
+      this.paint.clearcoatRoughness = 0.07;
     }
     this.glass = new THREE.MeshPhysicalMaterial({
-      color: '#05070a', metalness: 0, roughness: 0.03, envMapIntensity: 1.6,
+      color: '#05070a', metalness: 0, roughness: 0.04, envMapIntensity: 1.2,
       transparent: true, opacity: 0.82, depthWrite: false,
     });
     this.lens = new THREE.MeshPhysicalMaterial({
-      color: '#ffffff', metalness: 0, roughness: 0.04, envMapIntensity: 1.4,
+      color: '#ffffff', metalness: 0, roughness: 0.05, envMapIntensity: 1.1,
       transparent: true, opacity: 0.16, depthWrite: false,
     });
     this.headMat = new THREE.MeshBasicMaterial({ color: '#ffffff' });
     // Reflector del faro: metal pulido que se ilumina con la lámpara.
     this.headReflector = new THREE.MeshStandardMaterial({
-      color: '#c9d0da', metalness: 1, roughness: 0.18, emissive: '#dfe8ff', emissiveIntensity: 1, envMapIntensity: 1.2,
+      color: '#c9d0da', metalness: 1, roughness: 0.2, emissive: '#dfe8ff', emissiveIntensity: 1, envMapIntensity: 1,
     });
     this.tailMat = this.#tailMaterial();
     this.amber = new THREE.MeshBasicMaterial({ color: sodium('#ff6a10', 0.35) });
     this.rimMat = finishMaterial('plata');
-    this.chrome = new THREE.MeshStandardMaterial({ color: '#c9ccd2', metalness: 1, roughness: 0.12, envMapIntensity: 1.4 });
+    this.chrome = new THREE.MeshStandardMaterial({ color: '#c9ccd2', metalness: 1, roughness: 0.14, envMapIntensity: 1.1 });
     this.trim = new THREE.MeshStandardMaterial({ color: '#08090b', metalness: 0.3, roughness: 0.45, envMapIntensity: 0.8 });
     this.tire = new THREE.MeshStandardMaterial({ color: '#111113', roughness: 0.82, metalness: 0, envMapIntensity: 0.5 });
     this.plateLight = new THREE.MeshBasicMaterial({ color: sodium('#fff2dc', 0.6) });
@@ -170,7 +175,7 @@ export class Car {
           float lat = abs(vLat);
           float idx = lat < .48 ? (vLat > 0. ? 0. : 1.) : (vLat > 0. ? 2. : 3.);
           float k = clamp(uSeq * 4. - idx, 0., 1.);
-          diffuseColor.rgb *= .1 + 3.4 * uOn * k;`
+          diffuseColor.rgb *= .1 + 2.9 * uOn * k;`
         );
     };
     m.customProgramCacheKey = () => 'tail-seq';
@@ -308,8 +313,8 @@ export class Car {
   setLights(v) {
     this.headV = v;
     this.state.lights = v;
-    this.headMat.color.setRGB(1, 1, 1).multiplyScalar(0.05 + 4 * v);
-    this.headReflector.emissiveIntensity = 0.02 + 1.6 * v;
+    this.headMat.color.setRGB(1, 1, 1).multiplyScalar(0.05 + 3 * v);
+    this.headReflector.emissiveIntensity = 0.02 + 1.15 * v;
   }
 
   setTail(v) {

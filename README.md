@@ -26,7 +26,8 @@ Parámetros útiles en la URL:
 index.html                 secciones y textos
 src/main.js                arranque, Lenis, bucle único de render, intro
 src/choreo.js              planos de cámara por sección e interpolación por scroll
-src/chapters.js            efectos DOM de la historia (cotas, velocidad, cifras, raíl)
+src/chapters.js            efectos DOM ligados al scroll (cotas, velocidad, pilotos, raíl)
+src/editorial.js           entradas de texto: líneas con máscara, filetes, cifras
 src/configurator.js        controles, giro con arrastre, enlace compartible
 src/gallery.js             fotos de detalle renderizadas desde la escena + scroll horizontal
 src/three/stage.js         escena, luces, calidad adaptativa, enfoque y titular

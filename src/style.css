@@ -1,16 +1,23 @@
 :root {
   --ink: #04060c;
-  --bone: #e8e9ee;
-  --mute: #8b91a3;
-  --dim: #545a6b;
+  --bone: #eceef3;
+  --text: #c8ccd7; /* cuerpo de texto: legible sobre la escena */
+  --mute: #9ba1b1;
+  --dim: #5f6576;
   --tail: #ff2338;
   --led: #cfe0ff;
   --neon: #46c2ff;
+  --sodium: #ffb45e;
+  --accent: var(--led);
   --line: rgba(232, 233, 238, 0.18);
 
   --display: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
   --mincho: 'Shippori Mincho B1', 'Yu Mincho', serif;
   --gutter: clamp(16px, 3vw, 44px);
+  --inset: calc(var(--gutter) + clamp(0px, 3.4vw, 56px)); /* deja libre el raíl */
+  --fs-title: clamp(36px, 4.4vw, 76px);
+  --fs-body: clamp(16px, 0.55vw + 10px, 19px);
+  --shade: 3, 4, 9;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -174,6 +181,7 @@ main {
   gap: clamp(18px, 2.4vw, 40px);
   font-size: 14px;
   color: var(--mute);
+  text-shadow: 0 1px 10px rgba(var(--shade), 0.8);
 }
 .bar nav a {
   position: relative;
@@ -225,6 +233,7 @@ main {
 }
 .rail li {
   position: relative;
+  text-shadow: 0 0 8px rgba(var(--shade), 0.9);
   padding-left: 18px;
   transition: color 0.4s;
 }
@@ -264,22 +273,26 @@ main {
   position: absolute;
   left: var(--gutter);
   bottom: clamp(36px, 7vh, 72px);
-  max-width: 26rem;
+  max-width: 28rem;
+}
+.hero .scrim {
+  background: radial-gradient(60% 55% at 0% 100%, rgba(var(--shade), 0.72), rgba(var(--shade), 0) 70%);
 }
 .hero-line {
   margin: 0;
-  font-size: clamp(22px, 2.1vw, 32px);
-  line-height: 1.16;
-  font-weight: 500;
-  font-stretch: 92%;
-  letter-spacing: -0.01em;
+  font-size: clamp(24px, 2.2vw, 34px);
+  line-height: 1.14;
+  font-weight: 560;
+  font-stretch: 94%;
+  letter-spacing: -0.012em;
   text-wrap: balance;
 }
 .hero-sub {
-  margin: 14px 0 0;
-  font-size: 15px;
-  color: var(--mute);
-  max-width: 30ch;
+  margin: 16px 0 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text);
+  max-width: 32ch;
 }
 .hero-vertical {
   position: absolute;
@@ -339,6 +352,11 @@ main {
   height: 100svh;
   overflow: hidden;
 }
+.scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
 .kanji {
   position: absolute;
   font-family: var(--mincho);
@@ -346,51 +364,95 @@ main {
   line-height: 1;
   font-size: min(54vh, 40vw);
   color: transparent;
-  -webkit-text-stroke: 1px rgba(232, 233, 238, 0.2);
+  -webkit-text-stroke: 1px rgba(232, 233, 238, 0.16);
   user-select: none;
   pointer-events: none;
 }
-.ch-title {
+
+/* Bloque editorial: marca del capítulo, titular, filete y texto. */
+.plate {
   position: absolute;
+}
+.ch-mark {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 20px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--mute);
+}
+.ch-mark span {
+  font-family: var(--mincho);
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--accent);
+}
+.ch-title {
   margin: 0;
   font-weight: 700;
   font-stretch: 112%;
-  font-size: clamp(34px, 4.8vw, 82px);
-  line-height: 0.98;
+  font-size: var(--fs-title);
+  line-height: 1;
   letter-spacing: -0.025em;
   text-wrap: balance;
-  max-width: 13ch;
+  max-width: 12ch;
+  text-shadow: 0 2px 34px rgba(var(--shade), 0.55);
+}
+.ch-rule {
+  display: block;
+  width: 56px;
+  height: 2px;
+  margin: 28px 0 22px;
+  background: var(--accent);
+  transform-origin: left center;
 }
 .ch-text {
-  position: absolute;
   margin: 0;
   max-width: 34ch;
-  color: var(--mute);
-  font-size: 17px;
+  font-size: var(--fs-body);
+  line-height: 1.62;
+  color: var(--text);
+  text-shadow: 0 1px 16px rgba(var(--shade), 0.9);
+  text-wrap: pretty;
 }
 
-/* Silueta: plano lateral, cotas de dibujo técnico sobre el coche real. */
+/* Silueta: el coche baja al tercio inferior; arriba, titular y texto como una cabecera a dos columnas. */
+.ch-silueta {
+  --accent: var(--led);
+}
+.ch-silueta .scrim {
+  background: linear-gradient(180deg, rgba(var(--shade), 0.72) 0%, rgba(var(--shade), 0.4) 30%, rgba(var(--shade), 0) 52%);
+}
 .ch-silueta .kanji {
   right: calc(var(--gutter) * 1.5);
   top: 8vh;
   font-size: min(36vh, 30vw);
 }
-.ch-silueta .ch-title {
-  left: calc(var(--gutter) + 40px);
-  top: 15vh;
+.ch-silueta .plate {
+  left: var(--inset);
+  top: 12vh;
+  display: grid;
+  grid-template-columns: auto minmax(0, 34ch);
+  grid-template-areas: 'mark mark' 'title rule' 'title text';
+  grid-template-rows: auto 1fr auto;
+  column-gap: clamp(32px, 5vw, 96px);
 }
-.ch-silueta .ch-text {
-  right: calc(var(--gutter) * 2);
-  bottom: 11vh;
-}
+.ch-silueta .ch-mark { grid-area: mark; }
+.ch-silueta .ch-title { grid-area: title; max-width: 11ch; }
+.ch-silueta .ch-rule { grid-area: rule; align-self: end; margin: 0 0 20px; }
+.ch-silueta .ch-text { grid-area: text; }
 .measure {
   position: absolute;
   left: 0;
   top: 0;
   pointer-events: none;
   color: var(--led);
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 500;
   letter-spacing: 0.04em;
+  text-shadow: 0 1px 10px rgba(var(--shade), 0.9);
   font-variant-numeric: tabular-nums;
 }
 .measure i {
@@ -454,21 +516,27 @@ main {
   opacity: var(--p, 0);
 }
 
-/* Luz */
+/* Luz: el coche a la izquierda, el texto en una columna a la derecha. */
+.ch-luz {
+  --accent: var(--tail);
+}
+.ch-luz .scrim {
+  background: linear-gradient(270deg, rgba(var(--shade), 0.9) 0%, rgba(var(--shade), 0.78) 34%, rgba(var(--shade), 0.45) 46%, rgba(var(--shade), 0) 62%);
+}
 .ch-luz .kanji {
-  left: calc(var(--gutter) + 40px);
-  bottom: 6vh;
-  -webkit-text-stroke-color: rgba(255, 35, 56, 0.35);
+  right: calc(var(--gutter) * 1.5);
+  top: 5vh;
+  font-size: min(34vh, 26vw);
+  -webkit-text-stroke-color: rgba(255, 35, 56, 0.22);
+}
+.ch-luz .plate {
+  right: var(--gutter);
+  top: 50%;
+  transform: translateY(-50%);
+  width: min(36rem, 36vw);
 }
 .ch-luz .ch-title {
-  right: var(--gutter);
-  top: 16vh;
-  text-align: right;
-}
-.ch-luz .ch-text {
-  right: var(--gutter);
-  top: calc(16vh + clamp(34px, 4.8vw, 82px) * 2.4);
-  text-align: right;
+  max-width: none;
 }
 
 @media (max-width: 760px) {
@@ -477,19 +545,43 @@ main {
   .bar nav { gap: 16px; font-size: 13px; }
   .bar nav a:nth-child(1) { display: none; }
   .rail { display: none; }
+  :root { --inset: var(--gutter); --fs-title: clamp(32px, 9.4vw, 44px); }
   .hero-vertical { top: 22vh; transform: none; font-size: 13px; }
   .hero-copy { right: var(--gutter); }
   .scroll-cue span { display: none; }
-  .ch-silueta .ch-title,
-  .ch-luz .ch-title { left: var(--gutter); right: var(--gutter); top: 12vh; text-align: left; }
-  .ch-silueta .ch-text,
-  .ch-luz .ch-text { left: var(--gutter); right: var(--gutter); top: auto; bottom: 9vh; text-align: left; }
-  .ch-silueta .kanji { top: auto; bottom: 26vh; right: var(--gutter); }
-  .ch-luz .kanji { bottom: 26vh; }
+  /* En vertical: titular arriba, texto abajo, cada uno sobre su degradado. */
+  .chapter .scrim {
+    background:
+      linear-gradient(180deg, rgba(var(--shade), 0.78) 0%, rgba(var(--shade), 0.35) 26%, rgba(var(--shade), 0) 42%),
+      linear-gradient(0deg, rgba(var(--shade), 0.85) 0%, rgba(var(--shade), 0.5) 24%, rgba(var(--shade), 0) 44%);
+  }
+  .chapter .plate,
+  .ch-silueta .plate,
+  .ch-luz .plate {
+    left: var(--gutter);
+    right: var(--gutter);
+    top: calc(11vh - 34px);
+    bottom: 7vh;
+    width: auto;
+    transform: none;
+    display: flex;
+    flex-direction: column;
+  }
+  .chapter .ch-title { max-width: 12ch; }
+  .chapter .ch-rule { margin: auto 0 18px; width: 40px; }
+  .chapter .ch-text { max-width: none; font-size: 16px; }
+  .ch-silueta .kanji { top: auto; bottom: 30vh; right: var(--gutter); }
+  .ch-luz .kanji { top: auto; bottom: 30vh; left: var(--gutter); right: auto; }
   .measure-height span { left: auto; right: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .scroll-cue i::after,
   .loader-line i { animation: none; }
+}
+
+/* Máscaras de SplitText: un poco de aire para no cortar descendentes ni sombras. */
+.line-mask {
+  padding: 0.1em 0.06em 0.12em 0;
+  margin: -0.1em -0.06em -0.12em 0;
 }
