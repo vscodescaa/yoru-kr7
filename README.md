@@ -38,7 +38,6 @@ src/three/rain.js          lluvia iluminada y salpicaduras
 src/three/post.js          profundidad de campo, bloom, lente, SMAA
 src/three/reflector.js     reflejo planar del suelo
 src/three/environment.js   mapa de entorno (HDRI + softboxes)
-src/three/car-procedural.js  coche procedural de la primera versión (referencia)
 src/style.css, sections.css
 src/fonts-ja.css           generado por scripts/subset-kanji-css.py
 ```
