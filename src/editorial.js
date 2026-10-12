@@ -55,7 +55,7 @@ function lines(el, mask, onChange) {
  * build(tl, parts) añade lo específico del bloque.
  */
 function block(trigger, start, parts, extra) {
-  const state = { titleLines: null, textLines: null, tl: null };
+  const state = { titleLines: null, textLines: null, tl: null, dir: 0 };
   const build = () => {
     const progress = state.tl ? state.tl.progress() : 0;
     state.tl?.kill();
@@ -84,6 +84,17 @@ function block(trigger, start, parts, extra) {
     extra?.(tl);
     tl.progress(progress);
     state.tl = tl;
+    // Si el texto se vuelve a partir a mitad de la entrada, sigue en la misma dirección.
+    if (state.dir > 0) tl.play();
+    else if (state.dir < 0) tl.reverse();
+  };
+  const play = () => {
+    state.dir = 1;
+    state.tl.play();
+  };
+  const reverse = () => {
+    state.dir = -1;
+    state.tl.reverse();
   };
   lines(parts.title, true, (l) => {
     state.titleLines = l;
@@ -97,9 +108,9 @@ function block(trigger, start, parts, extra) {
   ScrollTrigger.create({
     trigger,
     start,
-    onEnter: () => state.tl.play(),
-    onEnterBack: () => state.tl.play(),
-    onLeaveBack: () => state.tl.reverse(),
+    onEnter: play,
+    onEnterBack: play,
+    onLeaveBack: reverse,
   });
   return state;
 }

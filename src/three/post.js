@@ -112,11 +112,12 @@ const DofShader = {
       // Titular en profundidad: detrás del coche, delante de la ciudad.
       vec2 tuv = (vUv - uTitleRect.xy) / (uTitleRect.zw - uTitleRect.xy);
       if (uOpacity > .002 && tuv.x > 0. && tuv.x < 1. && tuv.y > 0. && tuv.y < 1. && zc > uTitleDepth) {
-        float ta = texture2D(tTitle, tuv).a;
+        vec4 tt = texture2D(tTitle, tuv);
         float edge = abs(tuv.x - .5) * 2.;
         float m = smoothstep(edge - .04, edge, uReveal * 1.04);
-        float shade = mix(.35, 1., smoothstep(.1, .85, tuv.y));
-        col = mix(col, uColor * shade * .85, ta * m * uOpacity * .92);
+        float shade = mix(.62, 1., smoothstep(.1, .85, tuv.y));
+        // El canvas ya trae el cromado; uColor lo tiñe apenas hacia el tono de la escena.
+        col = mix(col, tt.rgb * uColor * shade * .92, tt.a * m * uOpacity * .94);
       }
       gl_FragColor = vec4(col, 1.);
     }`,

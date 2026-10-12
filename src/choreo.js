@@ -85,7 +85,7 @@ export class Choreo {
     this.anchors = [...document.querySelectorAll('[data-shot]')].map((el) => {
       const top = el.getBoundingClientRect().top + scrollY;
       const base = SHOTS[el.dataset.shot];
-      const s = innerWidth / innerHeight < 0.8 && base.mobile ? { ...base, ...base.mobile } : base;
+      const s = innerWidth / innerHeight < 1 && base.mobile ? { ...base, ...base.mobile } : base;
       const a = flatten(s);
       const b = flatten({ ...s, ...(s.drift || {}) });
       return { el, name: el.dataset.shot, start: top, end: Math.max(top, top + el.offsetHeight - vh), a, b };

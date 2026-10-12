@@ -8,14 +8,17 @@
     radial-gradient(40% 50% at 0% 100%, rgba(var(--shade), 0.5), rgba(var(--shade), 0) 100%);
 }
 .ch-aire .kanji {
+  --k: var(--k-aire);
   left: var(--inset);
   top: 9vh;
   font-size: min(30vh, 26vw);
-  -webkit-text-stroke-color: rgba(70, 194, 255, 0.26);
 }
 .ch-aire .plate {
   left: var(--inset);
   bottom: 8vh;
+}
+.ch-aire .ch-text {
+  width: min(34ch, 80vw); /* el titular cambia de ancho: el párrafo no debe seguirlo */
 }
 .ch-aire .ch-title {
   max-width: none;
@@ -57,11 +60,12 @@
     linear-gradient(90deg, rgba(var(--shade), 0.8) 0%, rgba(var(--shade), 0.5) 26%, rgba(var(--shade), 0) 50%),
     linear-gradient(0deg, rgba(var(--shade), 0.7) 0%, rgba(var(--shade), 0) 32%);
 }
+/* A la derecha del texto, sobre la fachada: no queda detrás de ninguna línea. */
 .ch-corazon .kanji {
-  left: var(--inset);
-  top: 6vh;
-  font-size: min(32vh, 28vw);
-  -webkit-text-stroke-color: rgba(255, 180, 94, 0.2);
+  --k: var(--k-corazon);
+  left: calc(var(--inset) + min(30rem, 36vw) + 7vw);
+  top: 5vh;
+  font-size: min(24vh, 17vw);
 }
 .ch-corazon .plate {
   left: var(--inset);
@@ -168,6 +172,10 @@
   border: 1px solid var(--mute);
   border-radius: 50%;
 }
+.config-views button:not([aria-pressed='true']) {
+  background: rgba(7, 9, 17, 0.72);
+  color: var(--text);
+}
 .config-views {
   position: absolute;
   left: var(--gutter);
@@ -200,8 +208,14 @@
 .panel {
   position: absolute;
   right: var(--gutter);
-  top: 50%;
-  transform: translateY(-50%);
+  /* Centrado si cabe; si no, se ajusta al alto libre bajo la barra y hace scroll. */
+  top: 84px;
+  bottom: 24px;
+  height: fit-content;
+  max-height: calc(100% - 108px);
+  margin-block: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   width: min(372px, 34vw);
   padding: 6px 26px 22px;
   background: linear-gradient(180deg, rgba(7, 9, 17, 0.9), rgba(7, 9, 17, 0.8));
@@ -421,6 +435,7 @@ input[type='range']::-moz-range-thumb {
   height: 100svh;
   display: grid;
   grid-template-rows: auto auto 1fr;
+  grid-template-columns: minmax(0, 1fr); /* la tira de fotos no ensancha la cabecera */
   overflow: hidden;
   padding-top: 14vh;
   background: radial-gradient(70% 60% at 85% 0%, rgba(70, 60, 140, 0.16), transparent 70%), var(--ink);
@@ -433,10 +448,10 @@ input[type='range']::-moz-range-thumb {
   padding: 0 var(--gutter);
 }
 .gallery-head .kanji {
+  --k: var(--k-detalles);
   right: calc(var(--gutter) * 1.5);
   top: -9vh;
   font-size: min(30vh, 24vw);
-  -webkit-text-stroke-color: rgba(232, 233, 238, 0.09);
 }
 .gallery-head h2 {
   margin: 0;
@@ -532,10 +547,9 @@ input[type='range']::-moz-range-thumb {
   min-height: 100svh;
   display: grid;
   grid-template-rows: 1fr auto;
-  padding: 0 var(--gutter);
+  padding: 96px var(--gutter) 0;
 }
 .cierre-inner {
-  position: relative;
   align-self: end;
   padding-bottom: 7vh;
   max-width: 62rem;
@@ -543,8 +557,9 @@ input[type='range']::-moz-range-thumb {
 .cierre-inner > :not(.scrim) {
   position: relative;
 }
+/* Ocupa el ancho de la sección (nunca más): así no ensancha la página. */
 .cierre .scrim {
-  inset: -40vh -30vw -4vh calc(var(--gutter) * -1);
+  inset: -40vh 0 0 0;
   background: radial-gradient(62% 72% at 0% 82%, rgba(var(--shade), 0.92), rgba(var(--shade), 0.7) 45%, rgba(var(--shade), 0) 78%);
 }
 .cierre h2 {
@@ -598,14 +613,25 @@ input[type='range']::-moz-range-thumb {
 }
 .foot {
   position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 8px 24px;
-  padding: 22px 0 26px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 10px clamp(24px, 4vw, 64px);
+  margin: 0 calc(var(--gutter) * -1);
+  padding: 26px var(--gutter) 30px;
   border-top: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(4, 6, 12, 0.82), rgba(4, 6, 12, 0.96));
   font-size: 13px;
+  line-height: 1.55;
   color: var(--mute);
+}
+.foot-mark {
+  font-weight: 800;
+  font-stretch: 125%;
+  font-size: 13px;
+  letter-spacing: 0.55em;
+  color: var(--bone) !important;
+  padding-top: 1px;
 }
 .foot p {
   margin: 0;
@@ -645,9 +671,9 @@ input[type='range']::-moz-range-thumb {
   background: radial-gradient(80% 60% at 50% 70%, #1a1030, var(--ink));
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-aspect-ratio: 1/1) and (max-width: 1100px) {
   .ch-aire .ch-title { white-space: normal; max-width: 12ch; }
-  .ch-aire .kanji { left: auto; right: var(--gutter); top: auto; bottom: 34vh; }
+  .ch-aire .kanji { left: auto; right: var(--gutter); top: auto; bottom: 25vh; font-size: min(15vh, 26vw); }
   .speed { top: 30vh; right: var(--gutter); left: auto; }
   .ch-corazon .plate { bottom: 26vh; width: auto; }
   .ch-corazon .kanji { display: none; }
@@ -671,5 +697,38 @@ input[type='range']::-moz-range-thumb {
   .tile, .tile.tall { width: 100%; margin-top: 0; }
   .tile.tall .frame { aspect-ratio: 16 / 11; }
   .cierre-inner { padding-bottom: 6vh; }
-  .cierre .scrim { inset: -30vh calc(var(--gutter) * -1) -4vh; background: linear-gradient(0deg, rgba(var(--shade), 0.85) 30%, rgba(var(--shade), 0) 100%); }
+  .foot { grid-template-columns: 1fr; }
+  .cierre .scrim { inset: -30vh 0 0 0; background: linear-gradient(0deg, rgba(var(--shade), 0.85) 30%, rgba(var(--shade), 0) 100%); }
 }
+
+@media (max-height: 560px) and (min-aspect-ratio: 1/1) {
+  .speed { top: 54px; }
+  .speed-num { font-size: clamp(44px, 16vh, 80px); }
+  .ch-aire .plate { bottom: 14px; }
+  .ch-corazon .plate { top: 56px; width: min(26rem, 40vw); }
+  .ch-corazon .ch-text { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .specs { bottom: 12px; gap: 22px; }
+  .specs dt { font-size: 11px; margin-bottom: 2px; }
+  .specs dd { font-size: 24px; }
+  .specs div { padding-top: 8px; }
+  .config-head { top: 60px; }
+  .config-head h2 { font-size: 34px; }
+  .config-lead { display: none; }
+  .config-views { bottom: 14px; }
+  .panel { top: 56px; bottom: 12px; max-height: calc(100% - 68px); padding: 2px 18px 14px; }
+  .opt { padding: 10px 0; }
+  .gallery-pin { padding-top: 64px; }
+  .gallery-head h2 { font-size: 34px; }
+  .gallery-head .kanji { display: none; }
+  .gallery-progress { margin-top: 14px; }
+  .track { padding-top: 14px; }
+  .tile { width: min(52vw, 820px); }
+  .tile.tall { width: min(26vw, 430px); margin-top: 3vh; }
+  .tile figcaption { font-size: 13px; margin-top: 8px; }
+  .cierre { padding-top: 76px; }
+  .cierre h2 { font-size: 34px; }
+  .cierre-inner > p { font-size: 14px; margin-top: 14px; }
+  .cta { margin-top: 18px; }
+  .btn { padding: 11px 20px; font-size: 14px; }
+}
+

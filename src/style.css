@@ -9,6 +9,12 @@
   --neon: #46c2ff;
   --sodium: #ffb45e;
   --accent: var(--led);
+  /* Color de cada kanji (r, g, b): la llama de cada capítulo. */
+  --k-silueta: 140, 182, 255;
+  --k-luz: 255, 46, 72;
+  --k-aire: 70, 194, 255;
+  --k-corazon: 255, 158, 64;
+  --k-detalles: 168, 140, 255;
   --line: rgba(232, 233, 238, 0.18);
 
   --display: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
@@ -41,6 +47,11 @@ html.lenis body {
   scroll-behavior: auto !important;
 }
 
+html,
+body {
+  overflow-x: clip;
+}
+
 body {
   margin: 0;
   background: var(--ink);
@@ -49,7 +60,7 @@ body {
   line-height: 1.55;
   font-stretch: 100%;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+
 }
 
 a {
@@ -280,7 +291,7 @@ main {
 }
 .hero-line {
   margin: 0;
-  font-size: clamp(24px, 2.2vw, 34px);
+  font-size: clamp(24px, 2.4vw, 40px);
   line-height: 1.14;
   font-weight: 560;
   font-stretch: 94%;
@@ -305,12 +316,57 @@ main {
   font-weight: 500;
   font-size: 15px;
   letter-spacing: 0.55em;
-  color: var(--mute);
+  color: #ffd9de;
+  text-shadow: 0 0 6px rgba(var(--k-luz), 0.9), 0 0 18px rgba(var(--k-luz), 0.55);
+}
+/* Línea base del banner: de lado a lado, como el pie de una portada. */
+.hero-base {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: clamp(36px, 7vh, 72px);
+  height: 1px;
+  background: linear-gradient(90deg, rgba(232, 233, 238, 0.32), rgba(232, 233, 238, 0.12) 60%, rgba(var(--k-luz), 0.6));
+  transform-origin: left center;
+}
+.hero-copy {
+  padding-bottom: 26px;
+}
+.hero-index {
+  position: absolute;
+  right: calc(var(--gutter) + 120px);
+  bottom: calc(clamp(36px, 7vh, 72px) + 22px);
+  display: flex;
+  gap: clamp(18px, 2.2vw, 36px);
+}
+.hero-index a {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  text-shadow: 0 1px 10px rgba(var(--shade), 0.9);
+  transition: color 0.3s;
+}
+.hero-index a span {
+  font-family: var(--mincho);
+  font-weight: 800;
+  font-size: 18px;
+  color: rgb(var(--k));
+  text-shadow: 0 0 10px rgba(var(--k), 0.7);
+  transition: text-shadow 0.4s var(--ease);
+}
+.hero-index a:hover {
+  color: var(--bone);
+}
+.hero-index a:hover span {
+  text-shadow: 0 0 6px rgba(var(--k), 1), 0 0 22px rgba(var(--k), 0.9);
 }
 .scroll-cue {
   position: absolute;
   right: var(--gutter);
-  bottom: clamp(36px, 7vh, 72px);
+  bottom: calc(clamp(36px, 7vh, 72px) + 14px);
   display: flex;
   align-items: center;
   gap: 14px;
@@ -358,15 +414,58 @@ main {
   pointer-events: none;
 }
 .kanji {
+  --k: 232, 233, 238;
   position: absolute;
+  z-index: 0;
   font-family: var(--mincho);
   font-weight: 800;
   line-height: 1;
   font-size: min(54vh, 40vw);
-  color: transparent;
-  -webkit-text-stroke: 1px rgba(232, 233, 238, 0.16);
+  color: rgba(var(--k), 0.07);
+  -webkit-text-stroke: 1.5px rgba(var(--k), 0.62);
+  isolation: isolate;
   user-select: none;
   pointer-events: none;
+}
+/* Brillo tipo llama: la silueta del glifo desenfocada en su color, con un parpadeo lento
+   e irregular. Solo cambia opacidad y escala, así que no repinta en cada fotograma. */
+.kanji::before,
+.kanji::after {
+  content: attr(data-k);
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  color: transparent;
+  -webkit-text-stroke: 0;
+  transform-origin: 50% 100%;
+  will-change: opacity, transform;
+}
+.kanji::before {
+  text-shadow: 0 0 10px rgba(var(--k), 0.75), 0 0 34px rgba(var(--k), 0.5), 0 -18px 90px rgba(var(--k), 0.35);
+  opacity: 0.55;
+  animation: flame 5.3s ease-in-out infinite;
+}
+.kanji::after {
+  text-shadow: 0 0 3px rgba(255, 255, 255, 0.5), 0 0 14px rgba(var(--k), 0.9);
+  opacity: 0.35;
+  animation: flame-core 3.7s steps(1, end) infinite;
+}
+@keyframes flame {
+  0%, 100% { opacity: 0.55; transform: scale(1, 1); }
+  21% { opacity: 0.72; transform: scale(1.004, 1.018) translateY(-0.5%); }
+  34% { opacity: 0.6; transform: scale(1, 1.006); }
+  52% { opacity: 0.8; transform: scale(1.006, 1.024) translateY(-0.8%); }
+  71% { opacity: 0.58; transform: scale(1, 1.004); }
+  86% { opacity: 0.7; transform: scale(1.003, 1.014) translateY(-0.3%); }
+}
+@keyframes flame-core {
+  0%, 100% { opacity: 0.35; }
+  12% { opacity: 0.5; }
+  15% { opacity: 0.28; }
+  47% { opacity: 0.46; }
+  49% { opacity: 0.32; }
+  77% { opacity: 0.52; }
+  80% { opacity: 0.36; }
 }
 
 /* Bloque editorial: marca del capítulo, titular, filete y texto. */
@@ -421,14 +520,21 @@ main {
 /* Silueta: el coche baja al tercio inferior; arriba, titular y texto como una cabecera a dos columnas. */
 .ch-silueta {
   --accent: var(--led);
+  /* Color de cada kanji (r, g, b): la llama de cada capítulo. */
+  --k-silueta: 140, 182, 255;
+  --k-luz: 255, 46, 72;
+  --k-aire: 70, 194, 255;
+  --k-corazon: 255, 158, 64;
+  --k-detalles: 168, 140, 255;
 }
 .ch-silueta .scrim {
   background: linear-gradient(180deg, rgba(var(--shade), 0.72) 0%, rgba(var(--shade), 0.4) 30%, rgba(var(--shade), 0) 52%);
 }
 .ch-silueta .kanji {
+  --k: var(--k-silueta);
   right: calc(var(--gutter) * 1.5);
   top: 8vh;
-  font-size: min(36vh, 30vw);
+  font-size: min(32vh, 19vw);
 }
 .ch-silueta .plate {
   left: var(--inset);
@@ -524,10 +630,10 @@ main {
   background: linear-gradient(270deg, rgba(var(--shade), 0.9) 0%, rgba(var(--shade), 0.78) 34%, rgba(var(--shade), 0.45) 46%, rgba(var(--shade), 0) 62%);
 }
 .ch-luz .kanji {
+  --k: var(--k-luz);
   right: calc(var(--gutter) * 1.5);
   top: 5vh;
-  font-size: min(34vh, 26vw);
-  -webkit-text-stroke-color: rgba(255, 35, 56, 0.22);
+  font-size: min(30vh, 24vw);
 }
 .ch-luz .plate {
   right: var(--gutter);
@@ -539,13 +645,17 @@ main {
   max-width: none;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-aspect-ratio: 1/1) and (max-width: 1100px) {
   body { font-size: 16px; }
+  .hero-index { display: none; }
+  .hero-base { bottom: 28px; }
+  .hero-copy { bottom: 28px; padding-bottom: 22px; }
+  .scroll-cue { bottom: 42px; }
   .bar { padding: 18px var(--gutter); }
   .bar nav { gap: 16px; font-size: 13px; }
   .bar nav a:nth-child(1) { display: none; }
   .rail { display: none; }
-  :root { --inset: var(--gutter); --fs-title: clamp(32px, 9.4vw, 44px); }
+  :root { --inset: var(--gutter); --fs-title: clamp(32px, 8.4vw, 60px); }
   .hero-vertical { top: 22vh; transform: none; font-size: 13px; }
   .hero-copy { right: var(--gutter); }
   .scroll-cue span { display: none; }
@@ -570,14 +680,39 @@ main {
   .chapter .ch-title { max-width: 12ch; }
   .chapter .ch-rule { margin: auto 0 18px; width: 40px; }
   .chapter .ch-text { max-width: none; font-size: 16px; }
-  .ch-silueta .kanji { top: auto; bottom: 30vh; right: var(--gutter); }
-  .ch-luz .kanji { top: auto; bottom: 30vh; left: var(--gutter); right: auto; }
+  /* En vertical el kanji baja al asfalto, más pequeño, para no tapar el coche. */
+  .chapter .kanji { top: auto; bottom: 25vh; font-size: min(15vh, 26vw); }
+  .ch-silueta .kanji { right: var(--gutter); }
+  .ch-luz .kanji { left: var(--gutter); right: auto; }
   .measure-height span { left: auto; right: 12px; }
+}
+
+/* Pantallas bajas y anchas (móvil en horizontal): composición de escritorio, más apretada. */
+@media (max-height: 560px) and (min-aspect-ratio: 1/1) {
+  :root { --fs-title: clamp(24px, 7.4vh, 38px); --fs-body: 14px; --inset: calc(var(--gutter) + 28px); }
+  .bar { padding: 14px var(--gutter); }
+  .rail { gap: 10px; font-size: 12px; }
+  .hero-copy { bottom: 18px; max-width: 22rem; }
+  .hero-line { font-size: 19px; }
+  .hero-sub { display: none; }
+  .hero-vertical { display: none; }
+  .hero-index { display: none; }
+  .hero-base { bottom: 14px; }
+  .hero-copy { padding-bottom: 14px; bottom: 14px; }
+  .scroll-cue { bottom: 18px; }
+  .ch-mark { margin-bottom: 10px; }
+  .ch-rule { margin: 14px 0 12px; }
+  .ch-text { line-height: 1.5; }
+  .ch-silueta .plate { top: 64px; }
+  .ch-silueta .ch-rule { margin-bottom: 12px; }
+  .kanji { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .scroll-cue i::after,
-  .loader-line i { animation: none; }
+  .loader-line i,
+  .kanji::before,
+  .kanji::after { animation: none; }
 }
 
 /* Máscaras de SplitText: un poco de aire para no cortar descendentes ni sombras. */

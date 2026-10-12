@@ -141,13 +141,16 @@ async function boot() {
 
   document.getElementById('loader').classList.add('done');
   const heroBits = document.querySelectorAll('.hero-vertical, .scroll-cue, .bar');
+  const heroBase = document.querySelector('.hero-base');
+  const heroIndex = document.querySelectorAll('.hero-index a');
   const heroSub = document.querySelector('.hero-sub');
   const heroScrim = document.querySelector('.hero .scrim');
   const heroLine = reduceMotion ? [] : heroLines();
   gsap.set(heroBits, { autoAlpha: 0 });
   if (!reduceMotion) {
     gsap.set(heroLine, { yPercent: 112 });
-    gsap.set([heroSub, heroScrim], { autoAlpha: 0 });
+    gsap.set([heroSub, heroScrim, heroIndex], { autoAlpha: 0 });
+    gsap.set(heroBase, { scaleX: 0 });
   }
 
   const tl = gsap.timeline({ delay: 0.35 });
@@ -164,6 +167,8 @@ async function boot() {
       .to(heroScrim, { autoAlpha: 1, duration: 1.6, ease: 'power2.out' }, 1.8)
       .to(heroLine, { yPercent: 0, duration: 1.3, ease: 'expo.out', stagger: 0.1 }, 2.1)
       .to(heroSub, { autoAlpha: 1, duration: 1.1, ease: 'power2.out' }, 2.55)
+      .to(heroBase, { scaleX: 1, duration: 1.6, ease: 'expo.inOut' }, 1.9)
+      .fromTo(heroIndex, { y: 10 }, { autoAlpha: 1, y: 0, duration: 1, ease: 'power3.out', stagger: 0.08 }, 2.7)
       .to(heroBits, { autoAlpha: 1, duration: 1.2, ease: 'power2.out', stagger: 0.12 }, 2.4);
   }
 }

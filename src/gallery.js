@@ -32,7 +32,8 @@ export class Gallery {
     ).observe(this.el);
 
     const mm = gsap.matchMedia();
-    mm.add('(min-width: 761px)', () => {
+    // Recorrido horizontal solo con el diseño de escritorio (mismo criterio que el CSS).
+    mm.add('(min-width: 761px) and (min-aspect-ratio: 1/1), (min-width: 1101px)', () => {
       const track = this.el.querySelector('.track');
       const dist = () => Math.max(0, track.scrollWidth - innerWidth);
       const bar = this.el.querySelector('.gallery-progress i');
@@ -76,7 +77,7 @@ export class Gallery {
     const name = this.queue.shift();
     const st = this.stage;
     const shot = SHOTS[name];
-    const tall = this.tiles.find((t) => t.dataset.detail === name).classList.contains('tall') && innerWidth > 760;
+    const tall = this.tiles.find((t) => t.dataset.detail === name).classList.contains('tall') && innerWidth > 760 && innerWidth >= innerHeight;
     st.captureSize(tall ? 800 : 1280, tall ? 1000 : 800);
     const cam = st.camera;
     cam.position.set(...shot.pos);

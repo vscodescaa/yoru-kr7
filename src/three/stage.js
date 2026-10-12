@@ -156,7 +156,19 @@ export class Stage {
     g.font = "ultra-expanded 800 400px 'Archivo Variable', 'Archivo', sans-serif";
     if ('fontStretch' in g) g.fontStretch = 'ultra-expanded';
     g.letterSpacing = '-10px';
+    // Cromado de horizonte, como los emblemas de los noventa: cielo claro, línea oscura, suelo reflejado.
+    const grad = g.createLinearGradient(0, 120, 0, 440);
+    grad.addColorStop(0, '#ffffff');
+    grad.addColorStop(0.46, '#c7ccd8');
+    grad.addColorStop(0.5, '#5d6375');
+    grad.addColorStop(0.56, '#8c93a6');
+    grad.addColorStop(1, '#eef0f5');
+    g.fillStyle = grad;
     g.fillText(text, 1024, 440);
+    // Tres cortes de velocidad en la mitad inferior, cada vez más gruesos.
+    g.globalCompositeOperation = 'destination-out';
+    [[332, 5], [366, 8], [402, 12]].forEach(([y, h]) => g.fillRect(0, y, 2048, h));
+    g.globalCompositeOperation = 'source-over';
     this.titleTex.needsUpdate = true;
   }
 
